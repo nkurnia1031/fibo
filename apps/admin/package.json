@@ -1,0 +1,21 @@
+{
+  "name": "admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "VITE_DEMO_SWITCHER=true vite",
+    "build": "vite build",
+    "build:pages": "VITE_BASE=/fibo/ VITE_DEMO_SWITCHER=true vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "katex": "^0.19.1",
+    "lucide-vue-next": "^0.577.0",
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^8.3.6"
+  }
+}

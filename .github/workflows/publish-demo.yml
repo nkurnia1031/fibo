@@ -1,10 +1,11 @@
-name: Publish question authoring prototype
+name: Publish admin demo
 
 on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/publish-prototype.yml"
+      - ".github/workflows/publish-demo.yml"
+      - "apps/admin/**"
       - "docs/prototypes/question-authoring.html"
   workflow_dispatch:
 
@@ -12,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: question-authoring-pages
+  group: fibo-demo-pages
   cancel-in-progress: true
 
 jobs:
@@ -28,10 +29,23 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Prepare prototype page
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+      - name: Install Vue app dependencies
+        working-directory: apps/admin
+        run: npm ci
+      - name: Build the demo
+        working-directory: apps/admin
+        run: npm run build:pages
+      - name: Prepare GitHub Pages artifact
         run: |
-          mkdir -p site
-          cp docs/prototypes/question-authoring.html site/index.html
+          mkdir -p site/prototypes
+          cp -a apps/admin/dist/. site/
+          cp docs/prototypes/question-authoring.html site/prototypes/question-authoring.html
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload page artifact

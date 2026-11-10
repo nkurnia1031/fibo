@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: fibo
+      MYSQL_USER: fibo
+      MYSQL_PASSWORD: fibo-local
+      MYSQL_ROOT_PASSWORD: root-local-only
+    ports:
+      - "3307:3306"
+    volumes:
+      - fibo-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot-local-only"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  fibo-mysql:
