@@ -1,0 +1,43 @@
+name: Publish question authoring prototype
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-prototype.yml"
+      - "docs/prototypes/question-authoring.html"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: question-authoring-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Prepare prototype page
+        run: |
+          mkdir -p site
+          cp docs/prototypes/question-authoring.html site/index.html
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload page artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
