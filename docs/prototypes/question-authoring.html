@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prototipe alur penulisan soal TKA</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css" integrity="sha384-WwGtaC6ywCHxA5cstpj/3+xIZvTez8dq2IcBQaXRkenHZ7FVVq1ZROtURwfbtTlG" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js" integrity="sha384-a1WQdjRj162i159OYq041X6I4K8NenkrI09LlPmiHg0YOb7CR+wJOraXwK9abpnE" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/contrib/auto-render.min.js" integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous"></script>
   <style>
     :root {
       color-scheme: light;
@@ -67,9 +70,17 @@
     .small-button { padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: white; color: #334155; font-size: 12px; font-weight: 700; }
     .small-button:hover { background: var(--wash); }
     .math-hint { padding: 10px 12px; border-radius: 8px; background: #f5f7fb; color: #46566f; font-size: 12px; }
-    .math-sample { display: inline-flex; align-items: center; gap: 9px; margin-top: 6px; padding: 7px 10px; border: 1px solid #e1e7ef; border-radius: 6px; background: white; }
-    .math-sample code { color: #586982; font-size: 11px; }
-    .math-sample math { font-size: 19px; }
+    .math-hint code { color: #304768; }
+    .live-preview { margin-top: 13px; padding: 14px; border: 1px solid #ccd8e8; border-radius: 10px; background: #f9fbff; }
+    .live-preview h3 { color: #42536c; }
+    .preview-question { margin: 7px 0 12px; color: #1f2f46; }
+    .preview-options { display: grid; gap: 7px; margin: 0; padding-left: 25px; }
+    .preview-options li { padding-left: 3px; }
+    .preview-category { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .preview-explanation { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e1e7ef; }
+    .preview-images, .uploaded-images { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    .preview-images img, .uploaded-images img { max-width: min(100%, 260px); max-height: 200px; border: 1px solid var(--line); border-radius: 7px; object-fit: contain; background: white; }
+    .file-chip { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; background: white; color: #53627a; font-size: 11px; }
     .score-box { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; font-size: 13px; }
     .score-box strong { white-space: nowrap; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
@@ -136,20 +147,23 @@
     <header>
       <div class="eyebrow">Prototipe · Issue #4</div>
       <h1>Penulisan dan kurasi soal matematika</h1>
-      <p class="intro">Tekan tombol untuk mencoba tiga bentuk soal TKA dan melihat bagaimana butir bergerak dari draf ke pemeriksaan, terbit, revisi, lalu arsip.</p>
+      <p class="intro">Tekan tombol untuk mencoba bentuk respons TKA, menulis rumus TeX dengan pratinjau, melampirkan gambar, dan menjalankan alur draf sampai arsip.</p>
       <div class="question-note"><strong>Pertanyaan yang diuji:</strong> Apakah data satu butir dapat menyimpan pertanyaan, respons benar, skor, pembahasan, miskonsepsi, level kognitif, dan pemetaan Kerangka TKA; dan apakah alur draf → diperiksa → disetujui → terbit → diarsipkan menjaga butir terbit tetap utuh saat direvisi?</div>
       <div class="proposal">
         <h2>Rancangan awal untuk divalidasi</h2>
         <ul>
-          <li><strong>Bentuk:</strong> PG (minimal 3 pilihan, 1 kunci), PGK-MCMA (minimal 3 pilihan, lebih dari 1 kunci), dan PGK kategori (minimal 3 pernyataan, 2 label kategori).</li>
+          <li><strong>Bentuk respons TKA:</strong> PG satu jawaban, PGK-MCMA lebih dari satu jawaban, dan PGK kategori. PG memakai label pilihan A, B, C, D; daftar pilihan dapat ditambah.</li>
+          <li><strong>PGK kategori:</strong> beberapa pernyataan dengan label respons seperti Benar/Salah atau Sesuai/Tidak Sesuai. Tiap pernyataan punya satu kunci kategori.</li>
+          <li><strong>Esai:</strong> bukan bentuk respons pada kerangka resmi TKA; model ini menyediakan seluruh tiga bentuk respons yang ditetapkan TKA.</li>
           <li><strong>Wajib:</strong> pertanyaan/stimulus, jawaban benar, pembahasan, satu level kognitif, dan satu subelemen utama; miskonsepsi umum opsional.</li>
           <li><strong>Skor butir:</strong> 1 poin untuk respons yang seluruhnya benar, tanpa kredit parsial. Agregasi paket tes tetap di issue #5.</li>
           <li><strong>Siklus:</strong> Draf → pemeriksaan → disetujui → terbit. Perbaikan mengembalikan ke draf; revisi soal terbit membuat versi baru.</li>
           <li><strong>Arsip:</strong> soal tidak tersedia untuk paket baru, sementara versi lama dan kaitannya ke riwayat tes tetap tersimpan.</li>
-          <li><strong>Notasi:</strong> teks, media, dan TeX untuk rumus; produksi perlu tombol sisip dan pratinjau. Batas izin reviewer/publisher menunggu issue #7.</li>
+          <li><strong>Notasi dan gambar:</strong> input TeX dirender dengan KaTeX; gambar stimulus bisa dipilih dan dipratinjau. Upload pada prototipe masih lokal di browser.</li>
+          <li><strong>Siklus perizinan:</strong> batas izin reviewer/publisher menunggu issue #7.</li>
         </ul>
       </div>
-      <p class="source-note">Format dan batas minimum diambil dari panduan CMS resmi Kemendikdasmen: pilihan ganda, PGK-MCMA, dan PGK kategori; stimulus dapat berupa teks, tabel, grafik, atau gambar; pembahasan mendukung persamaan matematika.</p>
+      <p class="source-note">Tiga bentuk respons mengikuti Kerangka TKA. Label A–D adalah label pilihan pada PG; esai tidak termasuk bentuk respons resmi TKA.</p>
     </header>
 
     <section class="grid" aria-label="Editor dan keadaan butir">
@@ -170,6 +184,12 @@
           <div class="field full">
             <label for="prompt">Pertanyaan / stimulus <span aria-hidden="true">*</span></label>
             <textarea class="tall" id="prompt" placeholder="Tulis pertanyaan; stimulus teks, tabel, grafik, atau gambar dapat disertakan."></textarea>
+          </div>
+          <div class="field full">
+            <label for="image-files">Gambar pendukung</label>
+            <input id="image-files" type="file" accept="image/*" multiple>
+            <small>Pilih satu atau lebih diagram/gambar. Prototipe hanya membuat pratinjau lokal; aplikasi produksi akan menyimpan gambar ke penyimpanan konten.</small>
+            <div id="uploaded-images" class="uploaded-images" aria-live="polite"></div>
           </div>
           <div class="field full">
             <span class="field-label" id="responses-title">Pilihan jawaban · tandai kunci jawaban</span>
@@ -219,11 +239,11 @@
           </div>
           <div class="field full">
             <div class="math-hint">
-              <strong>Notasi matematika</strong> · pertanyaan, pilihan, dan pembahasan menerima teks dengan notasi TeX: <code>\( ... \)</code> untuk rumus sebaris dan <code>\[ ... \]</code> untuk rumus tersendiri. Editor produksi perlu tombol sisip rumus dan pratinjau hasil render.
-              <div class="math-sample"><code>\(\frac{11 - 3}{2}\)</code><math display="inline" aria-label="sebelas dikurangi tiga dibagi dua"><mfrac><mrow><mn>11</mn><mo>−</mo><mn>3</mn></mrow><mn>2</mn></mfrac></math></div>
+              <strong>Notasi matematika</strong> · tulis TeX sebaris dengan <code>\( ... \)</code> dan rumus display dengan <code>\[ ... \]</code>. Rumus akan dirender di pratinjau; contoh: <code>\(\frac{11 - 3}{2}\)</code>.
             </div>
           </div>
         </div>
+        <div id="live-preview" class="live-preview" aria-label="Pratinjau soal"></div>
         <div class="actions">
           <button class="button primary" type="button" data-free="save">Simpan draf</button>
           <button class="button" type="button" data-free="submit">Kirim untuk diperiksa</button>
@@ -273,7 +293,7 @@
     </section>
 
     <footer class="legal">
-      Acuan isi: <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/57208762616857-Panduan-Teknis-Cara-Menambahkan-Latihan-Soal-di-CMS" target="_blank" rel="noreferrer">Panduan teknis CMS latihan soal</a> (diperbarui 22 April 2026) dan <a href="https://pusmendik.kemdikbud.go.id/tka/tka/view/mata-pelajaran-wajib/smp/Matematika" target="_blank" rel="noreferrer">Kerangka TKA Matematika SMP/MTs</a>. Prototipe ini memakai data sementara di memori; tidak ada perubahan yang disimpan ke aplikasi.
+      Acuan format: <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/55899324549657-Format-Latihan-Soal-Ruang-Murid" target="_blank" rel="noreferrer">format latihan soal resmi</a> dan <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/57208762616857-Panduan-Teknis-Cara-Menambahkan-Latihan-Soal-di-CMS" target="_blank" rel="noreferrer">panduan teknis CMS</a>. KaTeX merender notasi TeX di browser. Berkas gambar hanya dipratinjau lokal dalam prototipe; data soal tidak disimpan ke aplikasi.
     </footer>
   </main>
 
@@ -286,6 +306,7 @@
         const common = {
           format,
           prompt: "",
+          imageNames: [],
           responses: [],
           categoryLabels: ["Benar", "Salah"],
           explanation: "",
@@ -518,7 +539,9 @@
     };
 
     const statusLabels = { draft: "Draf", review: "Dalam pemeriksaan", approved: "Disetujui", published: "Terbit", archived: "Diarsipkan" };
-    const formatLabels = { pg: "Pilihan ganda", mcma: "PGK-MCMA", category: "PGK kategori" };
+    const formatLabels = { pg: "Pilihan ganda · A/B/C/D", mcma: "PGK-MCMA", category: "PGK kategori" };
+    let selectedImageFiles = [];
+    let selectedImagePreviews = [];
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
     const currentData = () => state.working?.data || state.published?.data || QuestionWorkflow.questionFor("pg");
 
@@ -526,6 +549,47 @@
       const notice = $("#notice");
       notice.textContent = state.notice || "Belum ada tindakan.";
       notice.className = `notice ${state.noticeKind || ""}`;
+    }
+
+    function renderMathInElement(element) {
+      if (!window.renderMathInElement || !element) return;
+      window.renderMathInElement(element, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "\\(", right: "\\)", display: false }
+        ],
+        throwOnError: false
+      });
+    }
+
+    const textForPreview = (value) => escapeHtml(value || "").replace(/\r?\n/g, "<br>");
+
+    function renderLivePreview() {
+      const preview = $("#live-preview");
+      if (!preview || !$("#prompt")) return;
+      const data = readEditor();
+      const answers = data.format === "category"
+        ? `<ol class="preview-options">${data.responses.map((response, index) => `<li>${textForPreview(response.text || `Pernyataan ${index + 1}`)}<div class="preview-category">☐ ${escapeHtml(data.categoryLabels[0])}　 ☐ ${escapeHtml(data.categoryLabels[1])}</div></li>`).join("")}</ol>`
+        : `<ol class="preview-options" type="A">${data.responses.map((response, index) => `<li>${textForPreview(response.text || `Pilihan ${String.fromCharCode(65 + index)}`)}</li>`).join("")}</ol>`;
+      const imageContent = selectedImagePreviews.length
+        ? selectedImagePreviews.map((image) => `<img src="${image.url}" alt="${escapeHtml(image.file.name)}"><span class="file-chip">${escapeHtml(image.file.name)}</span>`).join("")
+        : (data.imageNames || []).map((name) => `<span class="file-chip">Gambar · ${escapeHtml(name)}</span>`).join("");
+      preview.innerHTML = `
+        <h3>Pratinjau soal untuk murid · ${formatLabels[data.format]}</h3>
+        <div class="preview-question">${textForPreview(data.prompt) || '<span style="color:var(--muted)">(Pertanyaan tampil di sini)</span>'}</div>
+        ${imageContent ? `<div class="preview-images">${imageContent}</div>` : ""}
+        ${answers}
+        <div class="preview-explanation"><h3>Pratinjau pembahasan</h3><div>${textForPreview(data.explanation) || '<span style="color:var(--muted)">(Pembahasan tampil di sini)</span>'}</div></div>`;
+      renderMathInElement(preview);
+    }
+
+    function clearImageSelection() {
+      selectedImagePreviews.forEach((image) => URL.revokeObjectURL(image.url));
+      selectedImageFiles = [];
+      selectedImagePreviews = [];
+      const input = $("#image-files");
+      if (input) input.value = "";
     }
 
     function renderEditor() {
@@ -541,12 +605,16 @@
       $("#category-labels").hidden = data.format !== "category";
       $("#category-a").value = data.categoryLabels[0] || "";
       $("#category-b").value = data.categoryLabels[1] || "";
+      $("#uploaded-images").innerHTML = selectedImagePreviews.length
+        ? selectedImagePreviews.map((image) => `<img src="${image.url}" alt="Pratinjau ${escapeHtml(image.file.name)}" title="${escapeHtml(image.file.name)}">`).join("")
+        : (data.imageNames || []).map((name) => `<span class="file-chip">${escapeHtml(name)}</span>`).join("");
       $("#responses-title").textContent = data.format === "category" ? "Pernyataan · pilih kunci kategori" : "Pilihan jawaban · tandai kunci jawaban";
       $("#add-response").textContent = data.format === "category" ? "+ Tambah pernyataan" : "+ Tambah pilihan";
       $("#responses").innerHTML = data.responses.map((response, index) => data.format === "category"
         ? `<div class="response-row category" data-index="${index}"><span class="row-no">${index + 1}</span><input data-response-text="${index}" value="${escapeHtml(response.text)}" aria-label="Pernyataan ${index + 1}"><select data-response-answer="${index}" aria-label="Kunci kategori ${index + 1}"><option ${response.answer === data.categoryLabels[0] ? "selected" : ""}>${escapeHtml(data.categoryLabels[0])}</option><option ${response.answer === data.categoryLabels[1] ? "selected" : ""}>${escapeHtml(data.categoryLabels[1])}</option></select><button class="icon-button" type="button" data-remove="${index}" aria-label="Hapus pernyataan ${index + 1}">×</button></div>`
         : `<div class="response-row" data-index="${index}"><span class="row-no">${String.fromCharCode(65 + index)}</span><input data-response-text="${index}" value="${escapeHtml(response.text)}" aria-label="Pilihan ${String.fromCharCode(65 + index)}"><input type="checkbox" data-response-correct="${index}" ${response.correct ? "checked" : ""} aria-label="${response.correct ? "Kunci jawaban" : "Tandai sebagai kunci jawaban"}"><button class="icon-button" type="button" data-remove="${index}" aria-label="Hapus pilihan ${String.fromCharCode(65 + index)}">×</button></div>`
       ).join("");
+      renderLivePreview();
     }
 
     function renderState() {
@@ -577,12 +645,13 @@
           <div class="state-field"><dt>Elemen / subelemen utama</dt><dd>${escapeHtml(data.topic)}</dd></div>
           <div class="state-field full"><dt>Skor butir</dt><dd>${escapeHtml(data.scoring)}</dd></div>
         </dl>
-        <div class="state-content"><h3>Pertanyaan / stimulus</h3><p>${escapeHtml(data.prompt || "(belum diisi)")}</p></div>
+        <div class="state-content"><h3>Pertanyaan / stimulus</h3><p>${escapeHtml(data.prompt || "(belum diisi)")}</p>${(data.imageNames || []).map((name) => `<span class="file-chip">Gambar · ${escapeHtml(name)}</span>`).join(" ")}</div>
         <div class="state-content"><h3>${data.format === "category" ? "Pernyataan dan kunci kategori" : "Pilihan dan kunci jawaban"}</h3><ul>${responseSummary || "<li>(belum diisi)</li>"}</ul></div>
         <div class="state-content"><h3>Pembahasan</h3><p>${escapeHtml(data.explanation || "(belum diisi)")}</p></div>
         <div class="state-content"><h3>Miskonsepsi umum · opsional</h3><p>${escapeHtml(data.commonMistakes || "Belum dicatat.")}</p></div>
         <div class="state-content"><h3>Riwayat</h3><div class="history">${versions}</div></div>
-        <div class="source-note">Notasi TeX disimpan sebagai teks sumber; contoh pratinjau di editor memakai MathML bawaan browser.</div>`;
+        <div class="source-note">Notasi TeX dirender dengan KaTeX. Nama gambar disimpan sebagai data prototipe; berkas dipratinjau lokal.</div>`;
+      renderMathInElement($("#state-body"));
       updateNotice();
     }
 
@@ -616,6 +685,7 @@
       });
       return {
         ...currentData(), format, prompt: $("#prompt").value, responses,
+        imageNames: selectedImageFiles.length ? selectedImageFiles.map((file) => file.name) : (currentData().imageNames || []),
         categoryLabels: [$("#category-a").value, $("#category-b").value],
         explanation: $("#explanation").value, commonMistakes: $("#mistakes").value,
         cognitiveLevel: $("#level").value, topic: $("#topic").value
@@ -626,7 +696,10 @@
       const freeButton = event.target.closest("[data-free]");
       if (freeButton) {
         const action = freeButton.dataset.free;
-        if (action === "reset") dispatch({ type: "reset", format: "pg", data: { ...QuestionWorkflow.questionFor("pg"), prompt: "", explanation: "", responses: [{ text: "", correct: true }, { text: "", correct: false }, { text: "", correct: false }], commonMistakes: "" } });
+        if (action === "reset") {
+          clearImageSelection();
+          dispatch({ type: "reset", format: "pg", data: { ...QuestionWorkflow.questionFor("pg"), prompt: "", explanation: "", responses: [{ text: "", correct: true }, { text: "", correct: false }, { text: "", correct: false }], commonMistakes: "" } });
+        }
         else if (action === "save") dispatch({ type: "save", data: readEditor() });
         else if (action === "submit") dispatch({ type: "submit" });
         else if (action === "request") dispatch({ type: "request-changes" });
@@ -642,6 +715,7 @@
       if (tab) {
         scenarioKey = tab.dataset.scenario;
         scenarioStep = 0;
+        clearImageSelection();
         state = scenarios[scenarioKey].start();
         render();
         return;
@@ -659,6 +733,7 @@
       }
       if (event.target.closest("#restart-scenario")) {
         scenarioStep = 0;
+        clearImageSelection();
         state = scenarios[scenarioKey].start();
         render();
         return;
@@ -687,7 +762,15 @@
     document.addEventListener("change", (event) => {
       if (event.target.matches("#format")) {
         dispatch({ type: "set-format", format: event.target.value });
+        return;
       }
+      if (event.target.matches("#image-files")) {
+        selectedImagePreviews.forEach((image) => URL.revokeObjectURL(image.url));
+        selectedImageFiles = [...event.target.files];
+        selectedImagePreviews = selectedImageFiles.map((file) => ({ file, url: URL.createObjectURL(file) }));
+        $("#uploaded-images").innerHTML = selectedImagePreviews.map((image) => `<img src="${image.url}" alt="Pratinjau ${escapeHtml(image.file.name)}" title="${escapeHtml(image.file.name)}">`).join("");
+      }
+      renderLivePreview();
     });
 
     document.addEventListener("input", (event) => {
@@ -696,12 +779,16 @@
         const labels = [$("#category-a").value, $("#category-b").value];
         const rows = data.responses.map((response) => ({ ...response, answer: labels.includes(response.answer) ? response.answer : labels[0] }));
         $("#responses").innerHTML = rows.map((response, index) => `<div class="response-row category" data-index="${index}"><span class="row-no">${index + 1}</span><input data-response-text="${index}" value="${escapeHtml(response.text)}" aria-label="Pernyataan ${index + 1}"><select data-response-answer="${index}" aria-label="Kunci kategori ${index + 1}"><option ${response.answer === labels[0] ? "selected" : ""}>${escapeHtml(labels[0])}</option><option ${response.answer === labels[1] ? "selected" : ""}>${escapeHtml(labels[1])}</option></select><button class="icon-button" type="button" data-remove="${index}" aria-label="Hapus pernyataan ${index + 1}">×</button></div>`).join("");
+        renderLivePreview();
+        return;
       }
+      renderLivePreview();
     });
 
     render();
     state = scenarios.happy.start();
     render();
+    window.addEventListener("load", renderLivePreview);
   </script>
 </body>
 </html>
