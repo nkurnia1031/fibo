@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototipe alur penulisan soal TKA</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e293b;
+      --muted: #65748b;
+      --line: #dbe3ed;
+      --paper: #ffffff;
+      --wash: #f3f6fa;
+      --blue: #2457c5;
+      --blue-light: #eaf0ff;
+      --green: #19724e;
+      --amber: #8c5a06;
+      --red: #a43838;
+      font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--wash); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .page { width: min(1380px, calc(100% - 36px)); margin: 0 auto; padding: 34px 0 72px; }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+    h1 { margin: 7px 0 8px; font-size: clamp(28px, 4vw, 42px); line-height: 1.1; letter-spacing: -.035em; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -.015em; }
+    h3 { margin: 0 0 8px; font-size: 14px; }
+    p { margin: 0; }
+    .intro { max-width: 900px; color: #425168; font-size: 16px; }
+    .question-note { margin-top: 16px; padding: 13px 16px; border-left: 3px solid var(--blue); border-radius: 5px; background: var(--blue-light); color: #33476c; }
+    .proposal { margin-top: 12px; padding: 15px 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: #425168; }
+    .proposal h2 { margin-bottom: 7px; font-size: 14px; }
+    .proposal ul { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; margin: 0; padding-left: 19px; font-size: 13px; }
+    .proposal li { padding-left: 2px; }
+    .source-note { margin-top: 10px; color: var(--muted); font-size: 13px; }
+    .source-note a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: 18px; margin-top: 24px; align-items: start; }
+    .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: 0 4px 14px #1937590a; }
+    .panel-head { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .panel-head p { margin-top: 3px; color: var(--muted); font-size: 13px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: #edf1f6; color: #334155; font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .badge[data-state="draft"] { background: #f1f3f6; }
+    .badge[data-state="review"] { color: #72500c; background: #fff3d3; }
+    .badge[data-state="approved"] { color: #244e93; background: #e8f0ff; }
+    .badge[data-state="published"] { color: #176747; background: #e2f6ec; }
+    .badge[data-state="archived"] { color: #5d6877; background: #e6e9ed; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .field { display: grid; gap: 5px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    .field label, .field-label { color: #43526a; font-size: 12px; font-weight: 750; }
+    .field small { color: var(--muted); font-size: 11px; }
+    input, select, textarea { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 7px; background: white; color: var(--ink); }
+    textarea { min-height: 76px; resize: vertical; }
+    textarea.tall { min-height: 100px; }
+    input:focus, select:focus, textarea:focus { outline: 3px solid #2457c522; border-color: var(--blue); }
+    .responses { display: grid; gap: 8px; }
+    .response-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 30px; align-items: center; gap: 7px; }
+    .response-row.category { grid-template-columns: 30px minmax(0, 1fr) 140px 30px; }
+    .response-row input[type="checkbox"] { width: 17px; height: 17px; margin: auto; accent-color: var(--blue); }
+    .row-no { color: var(--muted); font-size: 12px; text-align: center; }
+    .icon-button { width: 30px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: #627086; }
+    .icon-button:hover { border-color: #9ba9bb; }
+    .small-button { padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: white; color: #334155; font-size: 12px; font-weight: 700; }
+    .small-button:hover { background: var(--wash); }
+    .math-hint { padding: 10px 12px; border-radius: 8px; background: #f5f7fb; color: #46566f; font-size: 12px; }
+    .math-sample { display: inline-flex; align-items: center; gap: 9px; margin-top: 6px; padding: 7px 10px; border: 1px solid #e1e7ef; border-radius: 6px; background: white; }
+    .math-sample code { color: #586982; font-size: 11px; }
+    .math-sample math { font-size: 19px; }
+    .score-box { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; font-size: 13px; }
+    .score-box strong { white-space: nowrap; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+    .button { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #26354b; font-weight: 750; }
+    .button:hover { background: #f6f8fb; }
+    .button.primary { border-color: var(--blue); background: var(--blue); color: white; }
+    .button.primary:hover { background: #1d49a8; }
+    .button.danger { color: var(--red); }
+    .state-panel { position: sticky; top: 12px; }
+    .state-intro { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 13px; border-radius: 9px; background: #f6f8fb; }
+    .state-intro strong { font-size: 14px; }
+    .state-intro span { color: var(--muted); font-size: 12px; }
+    .state-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-top: 11px; }
+    .state-field { padding: 9px 0; border-bottom: 1px solid #edf0f4; min-width: 0; }
+    .state-field.full { grid-column: 1/-1; }
+    .state-field dt { color: var(--muted); font-size: 11px; font-weight: 750; }
+    .state-field dd { margin: 3px 0 0; overflow-wrap: anywhere; font-size: 13px; }
+    .state-content { margin-top: 13px; padding: 13px; border: 1px solid var(--line); border-radius: 9px; }
+    .state-content h3 { margin-bottom: 6px; color: #4b5b70; }
+    .state-content p, .state-content li { color: #34445a; font-size: 13px; }
+    .state-content ul { margin: 5px 0 0; padding-left: 20px; }
+    .key { color: var(--green) !important; font-weight: 800; }
+    .history { display: grid; gap: 8px; margin-top: 10px; }
+    .history-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid #e7ebf1; border-radius: 7px; font-size: 12px; }
+    .history-row span:last-child { color: var(--muted); }
+    .notice { display: flex; gap: 9px; align-items: flex-start; min-height: 48px; margin-top: 13px; padding: 11px 12px; border: 1px solid #d5e0ef; border-radius: 8px; background: #f2f7ff; color: #294364; font-size: 13px; }
+    .notice.error { border-color: #f2d0d0; background: #fff4f3; color: #8f3030; }
+    .notice.success { border-color: #cce9d8; background: #effaf3; color: #1b6245; }
+    .actions-panel, .walkthrough-panel { margin-top: 18px; }
+    .action-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .action-grid .button { font-size: 13px; }
+    .walkthrough-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .tab { padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #425168; font-size: 13px; font-weight: 750; }
+    .tab[aria-selected="true"] { border-color: var(--blue); background: var(--blue-light); color: #214aa0; }
+    .walkthrough-copy { padding: 12px 14px; border-radius: 9px; background: #f6f8fb; color: #425168; font-size: 13px; }
+    .walkthrough-copy strong { display: block; margin-bottom: 3px; color: var(--ink); }
+    .steps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .step-button { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #34445a; font-size: 12px; font-weight: 700; text-align: left; }
+    .step-button.current { border-color: var(--blue); color: #1e4ca8; box-shadow: 0 0 0 2px #2457c515; }
+    .step-button.done { border-color: #cce9d8; background: #f3fbf6; color: #236448; }
+    .step-number { display: grid; width: 21px; height: 21px; place-items: center; border-radius: 50%; background: #edf1f6; font-size: 11px; }
+    .step-button.done .step-number { background: #d7f1e2; }
+    .step-button.current .step-number { background: var(--blue-light); }
+    .walkthrough-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 12px; }
+    .legal { margin-top: 20px; padding-top: 13px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .legal a { color: var(--blue); }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .state-panel { position: static; }
+    }
+    @media (max-width: 560px) {
+      .page { width: min(100% - 22px, 1380px); padding-top: 23px; }
+      .panel { padding: 15px; }
+      .form-grid, .state-fields { grid-template-columns: 1fr; }
+      .proposal ul { grid-template-columns: 1fr; }
+      .field.full, .state-field.full { grid-column: auto; }
+      .response-row.category { grid-template-columns: 23px minmax(0, 1fr) 105px 30px; gap: 5px; }
+      .panel-head { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Prototipe · Issue #4</div>
+      <h1>Penulisan dan kurasi soal matematika</h1>
+      <p class="intro">Tekan tombol untuk mencoba tiga bentuk soal TKA dan melihat bagaimana butir bergerak dari draf ke pemeriksaan, terbit, revisi, lalu arsip.</p>
+      <div class="question-note"><strong>Pertanyaan yang diuji:</strong> Apakah data satu butir dapat menyimpan pertanyaan, respons benar, skor, pembahasan, miskonsepsi, level kognitif, dan pemetaan Kerangka TKA; dan apakah alur draf → diperiksa → disetujui → terbit → diarsipkan menjaga butir terbit tetap utuh saat direvisi?</div>
+      <div class="proposal">
+        <h2>Rancangan awal untuk divalidasi</h2>
+        <ul>
+          <li><strong>Bentuk:</strong> PG (minimal 3 pilihan, 1 kunci), PGK-MCMA (minimal 3 pilihan, lebih dari 1 kunci), dan PGK kategori (minimal 3 pernyataan, 2 label kategori).</li>
+          <li><strong>Wajib:</strong> pertanyaan/stimulus, jawaban benar, pembahasan, satu level kognitif, dan satu subelemen utama; miskonsepsi umum opsional.</li>
+          <li><strong>Skor butir:</strong> 1 poin untuk respons yang seluruhnya benar, tanpa kredit parsial. Agregasi paket tes tetap di issue #5.</li>
+          <li><strong>Siklus:</strong> Draf → pemeriksaan → disetujui → terbit. Perbaikan mengembalikan ke draf; revisi soal terbit membuat versi baru.</li>
+          <li><strong>Arsip:</strong> soal tidak tersedia untuk paket baru, sementara versi lama dan kaitannya ke riwayat tes tetap tersimpan.</li>
+          <li><strong>Notasi:</strong> teks, media, dan TeX untuk rumus; produksi perlu tombol sisip dan pratinjau. Batas izin reviewer/publisher menunggu issue #7.</li>
+        </ul>
+      </div>
+      <p class="source-note">Format dan batas minimum diambil dari panduan CMS resmi Kemendikdasmen: pilihan ganda, PGK-MCMA, dan PGK kategori; stimulus dapat berupa teks, tabel, grafik, atau gambar; pembahasan mendukung persamaan matematika.</p>
+    </header>
+
+    <section class="grid" aria-label="Editor dan keadaan butir">
+      <section class="panel" aria-labelledby="editor-title">
+        <div class="panel-head">
+          <div><h2 id="editor-title">Editor butir</h2><p>Data di bawah ini tersimpan hanya saat tombol “Simpan draf” ditekan.</p></div>
+          <span id="editor-status" class="badge" data-state="draft">Draf kosong</span>
+        </div>
+        <div class="form-grid">
+          <div class="field full">
+            <label for="format">Bentuk soal</label>
+            <select id="format">
+              <option value="pg">Pilihan ganda · satu jawaban benar</option>
+              <option value="mcma">PGK-MCMA · lebih dari satu jawaban benar</option>
+              <option value="category">PGK kategori · klasifikasi pernyataan</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="prompt">Pertanyaan / stimulus <span aria-hidden="true">*</span></label>
+            <textarea class="tall" id="prompt" placeholder="Tulis pertanyaan; stimulus teks, tabel, grafik, atau gambar dapat disertakan."></textarea>
+          </div>
+          <div class="field full">
+            <span class="field-label" id="responses-title">Pilihan jawaban · tandai kunci jawaban</span>
+            <div id="category-labels" class="form-grid" hidden>
+              <div class="field"><label for="category-a">Kategori 1</label><input id="category-a" value="Benar"></div>
+              <div class="field"><label for="category-b">Kategori 2</label><input id="category-b" value="Salah"></div>
+            </div>
+            <div id="responses" class="responses" style="margin-top:7px"></div>
+            <button class="small-button" type="button" id="add-response" style="margin-top:8px">+ Tambah pilihan</button>
+          </div>
+          <div class="field full">
+            <label for="explanation">Pembahasan / langkah penyelesaian <span aria-hidden="true">*</span></label>
+            <textarea id="explanation" placeholder="Jelaskan langkah dan alasan kunci jawaban."></textarea>
+          </div>
+          <div class="field full">
+            <label for="mistakes">Miskonsepsi umum <span style="font-weight:500;color:var(--muted)">(opsional)</span></label>
+            <textarea id="mistakes" placeholder="Contoh: mengurangi 3 dari satu sisi, tetapi lupa membagi kedua sisi dengan 2."></textarea>
+            <small>Catat pola salah yang membantu staf memberi pembahasan atau umpan balik belajar.</small>
+          </div>
+          <div class="field">
+            <label for="level">Level kognitif</label>
+            <select id="level">
+              <option>Pengetahuan dan Pemahaman</option>
+              <option>Aplikasi</option>
+              <option>Penalaran</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="topic">Subelemen utama Kerangka TKA</label>
+            <select id="topic">
+              <option>Bilangan · Bilangan Real</option>
+              <option selected>Aljabar · Persamaan dan Pertidaksamaan Linier</option>
+              <option>Aljabar · Bentuk Aljabar</option>
+              <option>Aljabar · Fungsi</option>
+              <option>Aljabar · Barisan dan Deret</option>
+              <option>Geometri dan Pengukuran · Objek Geometri</option>
+              <option>Geometri dan Pengukuran · Transformasi Geometri</option>
+              <option>Geometri dan Pengukuran · Pengukuran</option>
+              <option>Data dan Peluang · Data</option>
+              <option>Data dan Peluang · Peluang</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Skor butir</label>
+            <div class="score-box"><strong>1 poin · benar penuh atau 0</strong><span>Jawaban harus cocok seluruhnya; tanpa kredit parsial.</span></div>
+            <small>Aturan agregasi skor paket tes dibahas terpisah di issue #5.</small>
+          </div>
+          <div class="field full">
+            <div class="math-hint">
+              <strong>Notasi matematika</strong> · pertanyaan, pilihan, dan pembahasan menerima teks dengan notasi TeX: <code>\( ... \)</code> untuk rumus sebaris dan <code>\[ ... \]</code> untuk rumus tersendiri. Editor produksi perlu tombol sisip rumus dan pratinjau hasil render.
+              <div class="math-sample"><code>\(\frac{11 - 3}{2}\)</code><math display="inline" aria-label="sebelas dikurangi tiga dibagi dua"><mfrac><mrow><mn>11</mn><mo>−</mo><mn>3</mn></mrow><mn>2</mn></mfrac></math></div>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="button primary" type="button" data-free="save">Simpan draf</button>
+          <button class="button" type="button" data-free="submit">Kirim untuk diperiksa</button>
+        </div>
+      </section>
+
+      <aside class="panel state-panel" aria-labelledby="state-title">
+        <div class="panel-head">
+          <div><h2 id="state-title">Keadaan butir</h2><p>Keadaan penuh setelah setiap tindakan.</p></div>
+          <span id="state-badge" class="badge" data-state="draft">Draf</span>
+        </div>
+        <div id="state-body"></div>
+        <div id="notice" class="notice" role="status" aria-live="polite"></div>
+      </aside>
+    </section>
+
+    <section class="panel actions-panel" aria-labelledby="actions-title">
+      <div class="panel-head">
+        <div><h2 id="actions-title">Coba tindakan langsung</h2><p>Tombol selalu tersedia; tindakan yang tidak sah akan ditolak dengan alasannya.</p></div>
+        <button class="button" type="button" data-free="reset">Mulai draf baru</button>
+      </div>
+      <div class="action-grid">
+        <button class="button" type="button" data-free="format-pg">Gunakan PG</button>
+        <button class="button" type="button" data-free="format-mcma">Gunakan PGK-MCMA</button>
+        <button class="button" type="button" data-free="format-category">Gunakan PGK kategori</button>
+        <button class="button" type="button" data-free="request">Minta perbaikan</button>
+        <button class="button" type="button" data-free="approve">Setujui hasil pemeriksaan</button>
+        <button class="button primary" type="button" data-free="publish">Terbitkan</button>
+        <button class="button" type="button" data-free="edit">Buat revisi dari butir terbit</button>
+        <button class="button danger" type="button" data-free="archive">Arsipkan</button>
+        <button class="button" type="button" data-free="locked-edit">Coba simpan saat terkunci</button>
+      </div>
+    </section>
+
+    <section class="panel walkthrough-panel" aria-labelledby="walkthrough-title">
+      <div class="panel-head">
+        <div><h2 id="walkthrough-title">Skenario terpandu</h2><p>Pilih skenario untuk mengatur keadaan awal, lalu tekan langkah satu per satu.</p></div>
+      </div>
+      <div class="walkthrough-tabs" role="tablist" aria-label="Skenario">
+        <button class="tab" role="tab" type="button" data-scenario="happy" aria-selected="true">01 · Alur normal</button>
+        <button class="tab" role="tab" type="button" data-scenario="repair" aria-selected="false">02 · Minta perbaikan</button>
+        <button class="tab" role="tab" type="button" data-scenario="revision" aria-selected="false">03 · Revisi dan arsip</button>
+      </div>
+      <div id="walkthrough-copy" class="walkthrough-copy"></div>
+      <div id="steps" class="steps"></div>
+      <div class="walkthrough-foot"><span id="walkthrough-progress"></span><button class="small-button" type="button" id="restart-scenario">Ulangi skenario</button></div>
+    </section>
+
+    <footer class="legal">
+      Acuan isi: <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/57208762616857-Panduan-Teknis-Cara-Menambahkan-Latihan-Soal-di-CMS" target="_blank" rel="noreferrer">Panduan teknis CMS latihan soal</a> (diperbarui 22 April 2026) dan <a href="https://pusmendik.kemdikbud.go.id/tka/tka/view/mata-pelajaran-wajib/smp/Matematika" target="_blank" rel="noreferrer">Kerangka TKA Matematika SMP/MTs</a>. Prototipe ini memakai data sementara di memori; tidak ada perubahan yang disimpan ke aplikasi.
+    </footer>
+  </main>
+
+  <script>
+    // Pure workflow model: data in, data out. No DOM access in this block.
+    const QuestionWorkflow = (() => {
+      const copy = (value) => JSON.parse(JSON.stringify(value));
+
+      const questionFor = (format, partial = {}) => {
+        const common = {
+          format,
+          prompt: "",
+          responses: [],
+          categoryLabels: ["Benar", "Salah"],
+          explanation: "",
+          commonMistakes: "",
+          cognitiveLevel: "Aplikasi",
+          topic: "Aljabar · Persamaan dan Pertidaksamaan Linier",
+          framework: "Perka BSKAP 047/H/AN/2025 · SMP/MTs",
+          targetClass: "Kelas 9",
+          scoring: "1 poin · cocok seluruhnya untuk mendapat poin · tanpa kredit parsial"
+        };
+        const defaults = {
+          pg: {
+            prompt: "Jika \\(2x + 3 = 11\\), nilai \\(x\\) adalah ....",
+            responses: [
+              { text: "2", correct: false }, { text: "3", correct: false },
+              { text: "4", correct: true }, { text: "7", correct: false }
+            ],
+            explanation: "Kurangi 3 dari kedua sisi: \\(2x = 8\\). Bagi kedua sisi dengan 2, sehingga \\(x = 4\\).",
+            commonMistakes: "Mengurangi 3, tetapi lupa membagi kedua sisi dengan 2."
+          },
+          mcma: {
+            prompt: "Manakah pernyataan yang benar untuk \\(x^2 = 9\\)? Pilih semua jawaban yang benar.",
+            responses: [
+              { text: "Nilai \\(x\\) dapat 3.", correct: true },
+              { text: "Nilai \\(x\\) dapat −3.", correct: true },
+              { text: "Nilai \\(x\\) hanya 9.", correct: false },
+              { text: "Persamaan tidak memiliki solusi real.", correct: false }
+            ],
+            explanation: "Karena \\(x^2 = 9\\), maka \\(x = 3\\) atau \\(x = -3\\). Kedua nilai memenuhi persamaan.",
+            commonMistakes: "Mengambil akar kuadrat hanya sebagai nilai positif, sehingga melewatkan solusi −3."
+          },
+          category: {
+            prompt: "Tentukan Benar atau Salah untuk setiap pernyataan tentang \\(x = 4\\).",
+            responses: [
+              { text: "Nilai \\(2x + 3\\) adalah 11.", answer: "Benar" },
+              { text: "Nilai \\(x - 2\\) adalah 1.", answer: "Salah" },
+              { text: "Nilai \\(3x\\) adalah 12.", answer: "Benar" }
+            ],
+            explanation: "Substitusikan \\(x = 4\\) ke setiap pernyataan: hasilnya 11, 2, dan 12.",
+            commonMistakes: "Menghitung \\(x - 2\\) sebagai 1, biasanya karena salah mengurangkan bilangan."
+          }
+        };
+        return { ...common, ...copy(defaults[format] || defaults.pg), ...copy(partial) };
+      };
+
+      const newDraft = (format = "pg", data = null) => ({
+        id: "SOAL-001",
+        archived: false,
+        published: null,
+        previousVersions: [],
+        working: { version: 1, status: "draft", data: data ? copy(data) : questionFor(format) },
+        notice: "Draf baru siap diedit. Lengkapi data, lalu simpan atau kirim untuk diperiksa."
+      });
+
+      const publishedState = (format = "pg") => ({
+        id: "SOAL-001",
+        archived: false,
+        published: { version: 1, status: "published", data: questionFor(format) },
+        previousVersions: [],
+        working: null,
+        notice: "Butir versi 1 sudah terbit dan dapat dipakai dalam paket tes baru."
+      });
+
+      const validate = (data) => {
+        const errors = [];
+        if (!data.prompt.trim()) errors.push("pertanyaan atau stimulus belum diisi");
+        if (!data.explanation.trim()) errors.push("pembahasan belum diisi");
+        if (!data.topic.trim()) errors.push("subelemen utama belum dipilih");
+        if (!data.cognitiveLevel.trim()) errors.push("level kognitif belum dipilih");
+        if (data.format === "pg" || data.format === "mcma") {
+          if (data.responses.length < 3) errors.push("pilihan jawaban harus berjumlah minimal 3");
+          const correct = data.responses.filter((response) => response.correct).length;
+          if (data.format === "pg" && correct !== 1) errors.push("pilihan ganda harus memiliki tepat 1 kunci jawaban");
+          if (data.format === "mcma" && correct < 2) errors.push("PGK-MCMA harus memiliki lebih dari 1 kunci jawaban");
+          if (data.responses.some((response) => !response.text.trim())) errors.push("setiap pilihan jawaban harus diisi");
+        }
+        if (data.format === "category") {
+          if (data.responses.length < 3) errors.push("PGK kategori harus memiliki minimal 3 pernyataan");
+          if (data.categoryLabels.some((label) => !label.trim())) errors.push("kedua label kategori harus diisi");
+          if (data.responses.some((response) => !response.text.trim() || !data.categoryLabels.includes(response.answer))) {
+            errors.push("setiap pernyataan harus diisi dan diberi kunci kategori");
+          }
+        }
+        return errors;
+      };
+
+      const reject = (state, message) => ({ ...copy(state), notice: message, noticeKind: "error" });
+      const accept = (state, message) => ({ ...state, notice: message, noticeKind: "success" });
+
+      const transition = (state, action) => {
+        if (action.type === "reset") return newDraft(action.format || "pg", action.data || null);
+        if (action.type === "scenario-published") return publishedState(action.format || "pg");
+        const next = copy(state);
+
+        if (action.type === "set-format") {
+          if (!next.working || next.working.status !== "draft" || next.archived) return reject(state, "Bentuk soal hanya dapat diganti pada draf yang sedang diedit.");
+          const prior = next.working.data;
+          next.working.data = questionFor(action.format, {
+            prompt: prior.prompt || questionFor(action.format).prompt,
+            explanation: prior.explanation || questionFor(action.format).explanation,
+            commonMistakes: prior.commonMistakes,
+            cognitiveLevel: prior.cognitiveLevel, topic: prior.topic
+          });
+          return accept(next, "Bentuk soal diganti; jawaban dan kunci disesuaikan dengan format baru.");
+        }
+
+        if (action.type === "save") {
+          if (!next.working || next.working.status !== "draft" || next.archived) return reject(state, "Butir terkunci. Draf saja yang dapat diubah; minta perbaikan saat pemeriksaan atau buat revisi dari versi terbit.");
+          next.working.data = copy(action.data || next.working.data);
+          return accept(next, "Draf tersimpan. Draf boleh belum lengkap dan dapat dilanjutkan nanti.");
+        }
+
+        if (action.type === "submit") {
+          if (!next.working || next.working.status !== "draft" || next.archived) return reject(state, "Hanya draf aktif yang dapat dikirim untuk diperiksa.");
+          const errors = validate(next.working.data);
+          if (errors.length) return reject(state, `Belum dapat dikirim: ${errors.join("; ")}.`);
+          next.working.status = "review";
+          return accept(next, "Draf masuk pemeriksaan dan terkunci dari perubahan sampai diminta perbaikan.");
+        }
+
+        if (action.type === "request-changes") {
+          if (!next.working || next.working.status !== "review") return reject(state, "Permintaan perbaikan hanya dapat diberikan pada butir yang sedang diperiksa.");
+          next.working.status = "draft";
+          next.notice = "Kurator meminta perbaikan: jelaskan alasan perubahan dan periksa kembali kunci jawaban. Draf dapat diedit lalu dikirim ulang.";
+          next.noticeKind = "success";
+          return next;
+        }
+
+        if (action.type === "approve") {
+          if (!next.working || next.working.status !== "review") return reject(state, "Persetujuan hanya dapat diberikan pada butir yang sedang diperiksa.");
+          next.working.status = "approved";
+          return accept(next, "Pemeriksaan lolos. Butir menunggu tindakan terbit.");
+        }
+
+        if (action.type === "publish") {
+          if (!next.working || next.working.status !== "approved" || next.archived) return reject(state, "Terbitkan hanya dapat dilakukan setelah hasil pemeriksaan disetujui.");
+          if (next.published) next.previousVersions = [...next.previousVersions, { ...copy(next.published), status: "superseded" }];
+          next.published = { version: next.working.version, status: "published", data: copy(next.working.data) };
+          next.working = null;
+          return accept(next, `Versi ${next.published.version} terbit. Versi terdahulu tetap disimpan sebagai riwayat.`);
+        }
+
+        if (action.type === "begin-revision") {
+          if (!next.published || next.archived || next.working) return reject(state, "Revisi hanya dapat dimulai jika ada versi terbit, butir belum diarsipkan, dan belum ada draf revisi lain.");
+          next.working = { version: next.published.version + 1, status: "draft", data: copy(next.published.data) };
+          return accept(next, `Draf revisi versi ${next.working.version} dibuat dari versi terbit. Versi terbit tetap utuh selama revisi diperiksa.`);
+        }
+
+        if (action.type === "archive") {
+          if (!next.published || next.archived || next.working) return reject(state, "Arsipkan hanya setelah ada versi terbit dan tidak ada draf revisi yang masih berjalan.");
+          next.archived = true;
+          next.published.status = "archived";
+          return accept(next, "Butir diarsipkan: tidak tersedia untuk paket baru, sementara versi dan riwayatnya tetap tersimpan.");
+        }
+
+        if (action.type === "locked-edit") {
+          return reject(state, "Perubahan ditolak karena butir bukan draf. Versi terbit harus direvisi sebagai versi baru; riwayat versi lama tidak ditimpa.");
+        }
+
+        return reject(state, "Tindakan tidak dikenali.");
+      };
+
+      const currentStatus = (state) => {
+        if (state.archived) return "archived";
+        if (state.working) return state.working.status;
+        if (state.published) return "published";
+        return "draft";
+      };
+
+      return { questionFor, newDraft, publishedState, validate, transition, currentStatus };
+    })();
+  </script>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    let state = QuestionWorkflow.newDraft("pg", {
+      ...QuestionWorkflow.questionFor("pg"), prompt: "", explanation: "", responses: [
+        { text: "", correct: true }, { text: "", correct: false }, { text: "", correct: false }
+      ], commonMistakes: ""
+    });
+    let scenarioKey = "happy";
+    let scenarioStep = 0;
+
+    const scenarios = {
+      happy: {
+        title: "Jalur normal: buat butir lalu terbitkan",
+        description: "Amati kapan validasi dijalankan, kapan draf terkunci, dan kapan soal mulai tersedia untuk paket tes.",
+        start: () => QuestionWorkflow.newDraft("pg"),
+        steps: [
+          { label: "Simpan draf", action: { type: "save" } },
+          { label: "Kirim untuk diperiksa", action: { type: "submit" } },
+          { label: "Setujui pemeriksaan", action: { type: "approve" } },
+          { label: "Terbitkan versi 1", action: { type: "publish" } }
+        ]
+      },
+      repair: {
+        title: "Siklus perbaikan: data belum lengkap dan dikembalikan",
+        description: "Kirim butir kategori yang belum lengkap untuk melihat validasi. Lengkapi datanya, kirim lagi, lalu kurator meminta perbaikan sebelum menyetujui.",
+        start: () => QuestionWorkflow.newDraft("category", {
+          ...QuestionWorkflow.questionFor("category"), explanation: "", responses: [
+            { text: "", answer: "Benar" }, { text: "", answer: "Salah" }, { text: "", answer: "Benar" }
+          ]
+        }),
+        steps: [
+          { label: "Kirim draf belum lengkap", action: { type: "submit" } },
+          { label: "Lengkapi pembahasan", action: { type: "save", data: QuestionWorkflow.questionFor("category") } },
+          { label: "Kirim kembali", action: { type: "submit" } },
+          { label: "Kurator minta perbaikan", action: { type: "request-changes" } },
+          { label: "Simpan revisi", action: { type: "save", data: QuestionWorkflow.questionFor("category", { commonMistakes: "Periksa kembali tanda operasi sebelum menentukan kategori." }) } },
+          { label: "Kirim ulang untuk diperiksa", action: { type: "submit" } },
+          { label: "Setujui pemeriksaan", action: { type: "approve" } },
+          { label: "Terbitkan", action: { type: "publish" } }
+        ]
+      },
+      revision: {
+        title: "Revisi dan arsip: jaga versi yang telah terbit",
+        description: "Ubah soal terbit melalui revisi baru. Versi aktif tetap tersedia selama versi baru diperiksa; setelah versi baru terbit, versi lama masuk riwayat. Arsip mengeluarkan soal dari pemakaian baru tanpa menghapus riwayat.",
+        start: () => QuestionWorkflow.publishedState("mcma"),
+        steps: [
+          { label: "Buat draf revisi", action: { type: "begin-revision" } },
+          { label: "Simpan perubahan", action: { type: "save", data: QuestionWorkflow.questionFor("mcma", { commonMistakes: "Siswa sering lupa memeriksa kedua akar persamaan." }) } },
+          { label: "Kirim untuk diperiksa", action: { type: "submit" } },
+          { label: "Setujui pemeriksaan", action: { type: "approve" } },
+          { label: "Terbitkan versi 2", action: { type: "publish" } },
+          { label: "Arsipkan butir", action: { type: "archive" } },
+          { label: "Coba buat revisi setelah arsip", action: { type: "begin-revision" } }
+        ]
+      }
+    };
+
+    const statusLabels = { draft: "Draf", review: "Dalam pemeriksaan", approved: "Disetujui", published: "Terbit", archived: "Diarsipkan" };
+    const formatLabels = { pg: "Pilihan ganda", mcma: "PGK-MCMA", category: "PGK kategori" };
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    const currentData = () => state.working?.data || state.published?.data || QuestionWorkflow.questionFor("pg");
+
+    function updateNotice() {
+      const notice = $("#notice");
+      notice.textContent = state.notice || "Belum ada tindakan.";
+      notice.className = `notice ${state.noticeKind || ""}`;
+    }
+
+    function renderEditor() {
+      const data = currentData();
+      $("#editor-status").textContent = state.working ? `${statusLabels[state.working.status]} · v${state.working.version}` : (state.archived ? "Diarsipkan" : state.published ? `Terbit · v${state.published.version}` : "Draf kosong");
+      $("#editor-status").dataset.state = QuestionWorkflow.currentStatus(state);
+      $("#format").value = data.format;
+      $("#prompt").value = data.prompt;
+      $("#explanation").value = data.explanation;
+      $("#mistakes").value = data.commonMistakes;
+      $("#level").value = data.cognitiveLevel;
+      $("#topic").value = data.topic;
+      $("#category-labels").hidden = data.format !== "category";
+      $("#category-a").value = data.categoryLabels[0] || "";
+      $("#category-b").value = data.categoryLabels[1] || "";
+      $("#responses-title").textContent = data.format === "category" ? "Pernyataan · pilih kunci kategori" : "Pilihan jawaban · tandai kunci jawaban";
+      $("#add-response").textContent = data.format === "category" ? "+ Tambah pernyataan" : "+ Tambah pilihan";
+      $("#responses").innerHTML = data.responses.map((response, index) => data.format === "category"
+        ? `<div class="response-row category" data-index="${index}"><span class="row-no">${index + 1}</span><input data-response-text="${index}" value="${escapeHtml(response.text)}" aria-label="Pernyataan ${index + 1}"><select data-response-answer="${index}" aria-label="Kunci kategori ${index + 1}"><option ${response.answer === data.categoryLabels[0] ? "selected" : ""}>${escapeHtml(data.categoryLabels[0])}</option><option ${response.answer === data.categoryLabels[1] ? "selected" : ""}>${escapeHtml(data.categoryLabels[1])}</option></select><button class="icon-button" type="button" data-remove="${index}" aria-label="Hapus pernyataan ${index + 1}">×</button></div>`
+        : `<div class="response-row" data-index="${index}"><span class="row-no">${String.fromCharCode(65 + index)}</span><input data-response-text="${index}" value="${escapeHtml(response.text)}" aria-label="Pilihan ${String.fromCharCode(65 + index)}"><input type="checkbox" data-response-correct="${index}" ${response.correct ? "checked" : ""} aria-label="${response.correct ? "Kunci jawaban" : "Tandai sebagai kunci jawaban"}"><button class="icon-button" type="button" data-remove="${index}" aria-label="Hapus pilihan ${String.fromCharCode(65 + index)}">×</button></div>`
+      ).join("");
+    }
+
+    function renderState() {
+      const status = QuestionWorkflow.currentStatus(state);
+      const badge = $("#state-badge");
+      badge.textContent = statusLabels[status];
+      badge.dataset.state = status;
+      const active = state.working || state.published;
+      const data = active?.data || QuestionWorkflow.questionFor("pg");
+      const versionLabel = state.working
+        ? `Draf v${state.working.version}${state.published ? ` · versi terbit v${state.published.version} tetap aktif` : ""}`
+        : state.published ? `Versi terbit v${state.published.version}` : "Belum ada versi";
+      const responseSummary = data.format === "category"
+        ? data.responses.map((item, i) => `<li>${i + 1}. ${escapeHtml(item.text || "(belum diisi)")} <span class="key">→ ${escapeHtml(item.answer || "(belum dipilih)")}</span></li>`).join("")
+        : data.responses.map((item, i) => `<li>${String.fromCharCode(65 + i)}. ${escapeHtml(item.text || "(belum diisi)")} ${item.correct ? '<span class="key">· kunci</span>' : ""}</li>`).join("");
+      const versions = [
+        ...state.previousVersions.map((version) => `<div class="history-row"><span>Versi ${version.version} · ${formatLabels[version.data.format]}</span><span>Riwayat, tidak berubah</span></div>`),
+        ...(state.published ? [`<div class="history-row"><span>Versi ${state.published.version} · ${formatLabels[state.published.data.format]}</span><span>${state.archived ? "Diarsipkan" : "Terbit"}</span></div>`] : []),
+        ...(state.working ? [`<div class="history-row"><span>Versi ${state.working.version} · ${formatLabels[state.working.data.format]}</span><span>${statusLabels[state.working.status]}</span></div>`] : [])
+      ].join("") || '<p style="color:var(--muted);font-size:12px">Belum ada riwayat versi.</p>';
+      $("#state-body").innerHTML = `
+        <div class="state-intro"><div><strong>${escapeHtml(state.id)}</strong><br><span>${escapeHtml(versionLabel)}</span></div><span>${state.archived ? "Tidak untuk paket baru" : state.published && state.working ? "Versi terbit tetap aktif" : ""}</span></div>
+        <dl class="state-fields">
+          <div class="state-field"><dt>Bentuk soal</dt><dd>${formatLabels[data.format]}</dd></div>
+          <div class="state-field"><dt>Jenjang dan kelas sasaran</dt><dd>SMP/MTs · Kelas 9</dd></div>
+          <div class="state-field full"><dt>Kerangka TKA</dt><dd>${escapeHtml(data.framework)}</dd></div>
+          <div class="state-field"><dt>Level kognitif</dt><dd>${escapeHtml(data.cognitiveLevel)}</dd></div>
+          <div class="state-field"><dt>Elemen / subelemen utama</dt><dd>${escapeHtml(data.topic)}</dd></div>
+          <div class="state-field full"><dt>Skor butir</dt><dd>${escapeHtml(data.scoring)}</dd></div>
+        </dl>
+        <div class="state-content"><h3>Pertanyaan / stimulus</h3><p>${escapeHtml(data.prompt || "(belum diisi)")}</p></div>
+        <div class="state-content"><h3>${data.format === "category" ? "Pernyataan dan kunci kategori" : "Pilihan dan kunci jawaban"}</h3><ul>${responseSummary || "<li>(belum diisi)</li>"}</ul></div>
+        <div class="state-content"><h3>Pembahasan</h3><p>${escapeHtml(data.explanation || "(belum diisi)")}</p></div>
+        <div class="state-content"><h3>Miskonsepsi umum · opsional</h3><p>${escapeHtml(data.commonMistakes || "Belum dicatat.")}</p></div>
+        <div class="state-content"><h3>Riwayat</h3><div class="history">${versions}</div></div>
+        <div class="source-note">Notasi TeX disimpan sebagai teks sumber; contoh pratinjau di editor memakai MathML bawaan browser.</div>`;
+      updateNotice();
+    }
+
+    function renderWalkthrough() {
+      const scenario = scenarios[scenarioKey];
+      $$("[data-scenario]").forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.scenario === scenarioKey)));
+      $("#walkthrough-copy").innerHTML = `<strong>${scenario.title}</strong>${scenario.description}`;
+      $("#steps").innerHTML = scenario.steps.map((step, index) => {
+        const className = index < scenarioStep ? "done" : index === scenarioStep ? "current" : "";
+        return `<button class="step-button ${className}" type="button" data-step="${index}" ${index !== scenarioStep ? "disabled" : ""}><span class="step-number">${index < scenarioStep ? "✓" : index + 1}</span>${step.label}</button>`;
+      }).join("");
+      $("#walkthrough-progress").textContent = scenarioStep >= scenario.steps.length ? "Skenario selesai · ulangi untuk mencoba lagi." : `Langkah ${scenarioStep + 1} dari ${scenario.steps.length}`;
+    }
+
+    function render() {
+      renderEditor();
+      renderState();
+      renderWalkthrough();
+    }
+
+    function dispatch(action) {
+      state = QuestionWorkflow.transition(state, action);
+      render();
+    }
+
+    function readEditor() {
+      const format = $("#format").value;
+      const responses = $$("#responses [data-response-text]").map((input, index) => {
+        if (format === "category") return { text: input.value, answer: $(`#responses [data-response-answer="${index}"]`).value };
+        return { text: input.value, correct: $(`#responses [data-response-correct="${index}"]`).checked };
+      });
+      return {
+        ...currentData(), format, prompt: $("#prompt").value, responses,
+        categoryLabels: [$("#category-a").value, $("#category-b").value],
+        explanation: $("#explanation").value, commonMistakes: $("#mistakes").value,
+        cognitiveLevel: $("#level").value, topic: $("#topic").value
+      };
+    }
+
+    document.addEventListener("click", (event) => {
+      const freeButton = event.target.closest("[data-free]");
+      if (freeButton) {
+        const action = freeButton.dataset.free;
+        if (action === "reset") dispatch({ type: "reset", format: "pg", data: { ...QuestionWorkflow.questionFor("pg"), prompt: "", explanation: "", responses: [{ text: "", correct: true }, { text: "", correct: false }, { text: "", correct: false }], commonMistakes: "" } });
+        else if (action === "save") dispatch({ type: "save", data: readEditor() });
+        else if (action === "submit") dispatch({ type: "submit" });
+        else if (action === "request") dispatch({ type: "request-changes" });
+        else if (action === "approve") dispatch({ type: "approve" });
+        else if (action === "publish") dispatch({ type: "publish" });
+        else if (action === "edit") dispatch({ type: "begin-revision" });
+        else if (action === "archive") dispatch({ type: "archive" });
+        else if (action === "locked-edit") dispatch({ type: "locked-edit" });
+        else if (action.startsWith("format-")) dispatch({ type: "set-format", format: action.slice(7) });
+        return;
+      }
+      const tab = event.target.closest("[data-scenario]");
+      if (tab) {
+        scenarioKey = tab.dataset.scenario;
+        scenarioStep = 0;
+        state = scenarios[scenarioKey].start();
+        render();
+        return;
+      }
+      const stepButton = event.target.closest("[data-step]");
+      if (stepButton) {
+        const scenario = scenarios[scenarioKey];
+        const step = scenario.steps[scenarioStep];
+        if (step) {
+          state = QuestionWorkflow.transition(state, step.action);
+          scenarioStep += 1;
+          render();
+        }
+        return;
+      }
+      if (event.target.closest("#restart-scenario")) {
+        scenarioStep = 0;
+        state = scenarios[scenarioKey].start();
+        render();
+        return;
+      }
+      const remove = event.target.closest("[data-remove]");
+      if (remove) {
+        const data = readEditor();
+        if (data.responses.length <= 3) {
+          state = { ...state, notice: data.format === "category" ? "Kategori tidak dapat memiliki kurang dari 3 pernyataan." : "Soal tidak dapat memiliki kurang dari 3 pilihan.", noticeKind: "error" };
+          updateNotice();
+          return;
+        }
+        data.responses.splice(Number(remove.dataset.remove), 1);
+        state = { ...state, notice: "Perubahan pilihan masih di editor; tekan Simpan draf untuk menyimpan.", noticeKind: "" };
+        renderEditor(); updateNotice();
+        return;
+      }
+      if (event.target.closest("#add-response")) {
+        const data = readEditor();
+        data.responses.push(data.format === "category" ? { text: "", answer: data.categoryLabels[0] } : { text: "", correct: false });
+        state = { ...state, notice: "Tambahkan isi pilihan, lalu tekan Simpan draf.", noticeKind: "" };
+        renderEditor(); updateNotice();
+      }
+    });
+
+    document.addEventListener("change", (event) => {
+      if (event.target.matches("#format")) {
+        dispatch({ type: "set-format", format: event.target.value });
+      }
+    });
+
+    document.addEventListener("input", (event) => {
+      if (event.target.matches("#category-a, #category-b")) {
+        const data = readEditor();
+        const labels = [$("#category-a").value, $("#category-b").value];
+        const rows = data.responses.map((response) => ({ ...response, answer: labels.includes(response.answer) ? response.answer : labels[0] }));
+        $("#responses").innerHTML = rows.map((response, index) => `<div class="response-row category" data-index="${index}"><span class="row-no">${index + 1}</span><input data-response-text="${index}" value="${escapeHtml(response.text)}" aria-label="Pernyataan ${index + 1}"><select data-response-answer="${index}" aria-label="Kunci kategori ${index + 1}"><option ${response.answer === labels[0] ? "selected" : ""}>${escapeHtml(labels[0])}</option><option ${response.answer === labels[1] ? "selected" : ""}>${escapeHtml(labels[1])}</option></select><button class="icon-button" type="button" data-remove="${index}" aria-label="Hapus pernyataan ${index + 1}">×</button></div>`).join("");
+      }
+    });
+
+    render();
+    state = scenarios.happy.start();
+    render();
+  </script>
+</body>
+</html>
