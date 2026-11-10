@@ -6,6 +6,8 @@ Demo panel admin untuk alur MVP TKA Matematika.
 
 Buka [demo interaktif](https://nkurnia1031.github.io/fibo/). Pilih tata letak dengan tombol di tengah bawah atau tombol panah kiri/kanan. Demo memakai data contoh sementara di browser; tidak ada login, pembayaran, atau data murid nyata.
 
+Demo mencakup CRUD draf bank soal dan paket tes, pratinjau serta uji coba soal, pengelolaan metode pembayaran, admin/staf, dan akun murid. Persamaan dirender dengan [LaTeX.js](https://latex.js.org/); perubahan demo hanya tersimpan selama halaman terbuka.
+
 ## Spek dan urutan pembangunan
 
 - [Spek MVP Admin TKA Matematika](docs/specs/tka-math-admin-mvp.md)

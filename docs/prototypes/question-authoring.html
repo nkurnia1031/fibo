@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prototipe alur penulisan soal TKA</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css" integrity="sha384-WwGtaC6ywCHxA5cstpj/3+xIZvTez8dq2IcBQaXRkenHZ7FVVq1ZROtURwfbtTlG" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js" integrity="sha384-a1WQdjRj162i159OYq041X6I4K8NenkrI09LlPmiHg0YOb7CR+wJOraXwK9abpnE" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/contrib/auto-render.min.js" integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous"></script>
+  <script type="module">
+    import { LaTeXJSComponent } from "https://cdn.jsdelivr.net/npm/latex.js@0.12.6/dist/latex.mjs";
+    if (!customElements.get("latex-js")) customElements.define("latex-js", LaTeXJSComponent);
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -74,6 +75,7 @@
     .live-preview { margin-top: 13px; padding: 14px; border: 1px solid #ccd8e8; border-radius: 10px; background: #f9fbff; }
     .live-preview h3 { color: #42536c; }
     .preview-question { margin: 7px 0 12px; color: #1f2f46; }
+    .prototype-latex { display: block; max-width: 100%; }
     .preview-options { display: grid; gap: 7px; margin: 0; padding-left: 25px; }
     .preview-options li { padding-left: 3px; }
     .preview-category { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 4px; color: var(--muted); font-size: 12px; }
@@ -159,8 +161,8 @@
           <li><strong>Skor butir:</strong> 1 poin untuk respons yang seluruhnya benar, tanpa kredit parsial. Agregasi paket tes tetap di issue #5.</li>
           <li><strong>Siklus:</strong> Draf → pemeriksaan → disetujui → terbit. Perbaikan mengembalikan ke draf; revisi soal terbit membuat versi baru.</li>
           <li><strong>Arsip:</strong> soal tidak tersedia untuk paket baru, sementara versi lama dan kaitannya ke riwayat tes tetap tersimpan.</li>
-          <li><strong>Notasi dan gambar:</strong> input TeX dirender dengan KaTeX; gambar stimulus bisa dipilih dan dipratinjau. Upload pada prototipe masih lokal di browser.</li>
-          <li><strong>Siklus perizinan:</strong> batas izin reviewer/publisher menunggu issue #7.</li>
+          <li><strong>Notasi dan gambar:</strong> input TeX dirender dengan LaTeX.js; gambar stimulus bisa dipilih dan dipratinjau. Upload pada prototipe masih lokal di browser.</li>
+          <li><strong>Siklus perizinan:</strong> Penulis tidak menyetujui revisinya sendiri; Reviewer meninjau; Admin/Owner menerbitkan dan mengarsipkan.</li>
         </ul>
       </div>
       <p class="source-note">Tiga bentuk respons mengikuti Kerangka TKA. Label A–D adalah label pilihan pada PG; esai tidak termasuk bentuk respons resmi TKA.</p>
@@ -293,7 +295,7 @@
     </section>
 
     <footer class="legal">
-      Acuan format: <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/55899324549657-Format-Latihan-Soal-Ruang-Murid" target="_blank" rel="noreferrer">format latihan soal resmi</a> dan <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/57208762616857-Panduan-Teknis-Cara-Menambahkan-Latihan-Soal-di-CMS" target="_blank" rel="noreferrer">panduan teknis CMS</a>. KaTeX merender notasi TeX di browser. Berkas gambar hanya dipratinjau lokal dalam prototipe; data soal tidak disimpan ke aplikasi.
+      Acuan format: <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/55899324549657-Format-Latihan-Soal-Ruang-Murid" target="_blank" rel="noreferrer">format latihan soal resmi</a> dan <a href="https://pusatinformasi.rumahpendidikan.kemendikdasmen.go.id/hc/id/articles/57208762616857-Panduan-Teknis-Cara-Menambahkan-Latihan-Soal-di-CMS" target="_blank" rel="noreferrer">panduan teknis CMS</a>. LaTeX.js merender notasi TeX di browser. Berkas gambar hanya dipratinjau lokal dalam prototipe; data soal tidak disimpan ke aplikasi.
     </footer>
   </main>
 
@@ -552,14 +554,19 @@
     }
 
     function renderMathInElement(element) {
-      if (!window.renderMathInElement || !element) return;
-      window.renderMathInElement(element, {
-        delimiters: [
-          { left: "$$", right: "$$", display: true },
-          { left: "\\[", right: "\\]", display: true },
-          { left: "\\(", right: "\\)", display: false }
-        ],
-        throwOnError: false
+      if (!element) return;
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) if (/[\\$]/.test(walker.currentNode.nodeValue || "")) textNodes.push(walker.currentNode);
+      textNodes.forEach((node) => {
+        const value = node.nodeValue || "";
+        if (!value.includes("$") && !value.includes("\\(") && !value.includes("\\[")) return;
+        const renderer = document.createElement("latex-js");
+        renderer.className = "prototype-latex";
+        renderer.setAttribute("baseURL", "https://cdn.jsdelivr.net/npm/latex.js@0.12.6/dist/");
+        renderer.setAttribute("hyphenate", "false");
+        renderer.textContent = `\\documentclass{article}\\begin{document}${value}\\end{document}`;
+        node.replaceWith(renderer);
       });
     }
 
@@ -650,7 +657,7 @@
         <div class="state-content"><h3>Pembahasan</h3><p>${escapeHtml(data.explanation || "(belum diisi)")}</p></div>
         <div class="state-content"><h3>Miskonsepsi umum · opsional</h3><p>${escapeHtml(data.commonMistakes || "Belum dicatat.")}</p></div>
         <div class="state-content"><h3>Riwayat</h3><div class="history">${versions}</div></div>
-        <div class="source-note">Notasi TeX dirender dengan KaTeX. Nama gambar disimpan sebagai data prototipe; berkas dipratinjau lokal.</div>`;
+        <div class="source-note">Notasi TeX dirender dengan LaTeX.js. Nama gambar disimpan sebagai data prototipe; berkas dipratinjau lokal.</div>`;
       renderMathInElement($("#state-body"));
       updateNotice();
     }

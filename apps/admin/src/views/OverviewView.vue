@@ -1,7 +1,7 @@
 <script setup>
 import { ArrowDownRight, ArrowRight, ArrowUpRight, BookOpenCheck as BookIcon, ChevronDown as ChevronDownIcon, ClipboardCheck as PracticeIcon, Coins as CoinIcon, Clock3, FilePlus2, MessageSquareText, MoreHorizontal as MoreIcon, Sparkles, UsersRound as UsersRoundIcon } from 'lucide-vue-next'
 import { store } from '../demo-store'
-import MathText from '../components/MathText.vue'
+import LatexText from '../components/LatexText.vue'
 
 defineEmits(['new-question'])
 const slug = (value) => value.toLowerCase().replaceAll(' ', '-')
@@ -34,7 +34,7 @@ const activity = [
 
     <div class="dashboard-columns lower-columns">
       <section class="panel activity-panel"><div class="panel-heading"><div><span class="section-kicker">LOG AKTIVITAS</span><h2>Yang baru terjadi</h2></div><button class="icon-button"><MoreIcon /></button></div><div class="activity-list"><div v-for="item in activity" :key="item.time" class="activity-row"><span :class="['activity-avatar', item.tone]">{{ item.who === 'Sistem' ? 'S' : item.who.split(' ').map((n) => n[0]).join('') }}</span><p><b>{{ item.who }}</b> {{ item.action }}<br /><span>{{ item.object }}</span></p><time>{{ item.time }}</time></div></div></section>
-      <section class="panel recent-panel"><div class="panel-heading"><div><span class="section-kicker">TERAKHIR DIPERBARUI</span><h2>Soal terbaru</h2></div><button class="text-button" @click="$emit('new-question')">Buat soal <ArrowRight :size="14" /></button></div><div class="recent-question" v-for="q in store.questions.slice(0, 2)" :key="q.id"><div class="question-id">{{ q.id }} <span>· {{ q.topic }}</span></div><p><MathText :text="q.title" /></p><div class="recent-meta"><span :class="['status-tag', `status-${slug(q.status)}`]">{{ q.status }}</span><span>{{ q.format }}</span><span>{{ q.updated }}</span></div></div></section>
+      <section class="panel recent-panel"><div class="panel-heading"><div><span class="section-kicker">TERAKHIR DIPERBARUI</span><h2>Soal terbaru</h2></div><button class="text-button" @click="$emit('new-question')">Buat soal <ArrowRight :size="14" /></button></div><div class="recent-question" v-for="q in store.questions.slice(0, 2)" :key="q.id"><div class="question-id">{{ q.id }} <span>· {{ q.topic }}</span></div><p><LatexText :text="q.title" /></p><div class="recent-meta"><span :class="['status-tag', `status-${slug(q.status)}`]">{{ q.status }}</span><span>{{ q.format }}</span><span>{{ q.updated }}</span></div></div></section>
     </div>
     <div class="demo-note"><Sparkles :size="14" /><span>Demo interaktif · Data contoh tersimpan sementara di browser.</span><a href="./prototypes/question-authoring.html" target="_blank">Buka prototipe editor soal <ArrowRight :size="13" /></a></div>
   </div>

@@ -20,7 +20,7 @@ Kerangka SMP/MTs memuat elemen Bilangan, Aljabar, Geometri dan Pengukuran, serta
 Keputusan produk:
 
 - Setiap revisi soal wajib memiliki pertanyaan, kunci jawaban, pembahasan, level kognitif, dan satu subelemen utama. Miskonsepsi umum dan tag tambahan opsional.
-- Penulis menyusun konten kaya dengan notasi LaTeX dan unggahan gambar. Konten disimpan sebagai dokumen terstruktur; preview menggunakan KaTeX. Validasi tipe dan ukuran gambar, sanitasi konten, serta penyimpanan privat wajib pada backend.
+- Penulis menyusun konten dengan notasi LaTeX dan unggahan gambar. Demo menggunakan LaTeX.js 0.12.6 untuk merender sumber matematika pada editor, pratinjau, dan uji coba; sumber LaTeX tetap disimpan apa adanya. Implementasi menerima subset sintaks/makro yang didukung LaTeX.js; paket TeX arbitrer tidak dieksekusi. Validasi tipe dan ukuran gambar, sanitasi konten, serta penyimpanan privat wajib pada backend. [Dokumentasi LaTeX.js](https://latex.js.org/usage.html)
 - Stimulus grup disimpan terpisah dan ditautkan ke soal-soal yang menggunakannya.
 - Tidak ada format esai pada MVP karena tiga bentuk respons di atas adalah bentuk yang ditetapkan kerangka untuk jenjang ini. Penambahan format lain memerlukan keputusan produk tersendiri.
 - Hanya satu jawaban penuh benar memperoleh 1 poin. MCMA harus sama persis dengan himpunan kunci; kategori harus benar di semua baris. Salah atau kosong mendapat 0; tidak ada kredit parsial.
@@ -31,9 +31,12 @@ Keputusan produk:
 
 `Draf → Pemeriksaan → Disetujui → Terbit → Arsip`. Reviewer dapat meminta perbaikan, yang mengembalikan soal ke Draf. Penulis tidak dapat menyetujui soalnya sendiri. Reviewer menyetujui; Admin atau Owner menerbitkan dan mengarsipkan. Revisi yang sudah terbit tidak diedit; perubahan membuat revisi baru. Arsip mencegah pemakaian baru dan tetap menjaga riwayat.
 
+CRUD bank soal pada panel: buat, baca/pratinjau, edit dan hapus draf; uji coba jawaban dengan skor penuh 1 atau 0; kirim ke pemeriksaan; dan buat revisi untuk soal terbit. Revisi terbit dan arsip tidak diubah atau dihapus permanen.
+
 ### Paket tes
 
 - Admin/Owner membuat paket dengan memilih dan mengurutkan soal secara manual.
+- Admin/Owner dapat membuat, membaca, mengedit, menerbitkan, mengarsipkan, dan menghapus paket yang masih Draf. Paket terbit tidak diedit langsung; perubahan dibuat sebagai versi baru. Paket yang memiliki riwayat tidak dihapus permanen.
 - Satu paket memakai satu Jenjang dan satu versi Kerangka TKA.
 - Setiap butir paket menunjuk ke revisi soal tertentu. Paket terbit tidak berubah diam-diam; perubahan isi berarti menerbitkan versi paket baru.
 - Timer opsional ditentukan per paket. Urutan yang ditampilkan tetap mengikuti urutan manual pada MVP.
@@ -62,7 +65,9 @@ Autentikasi staf dikelola aplikasi. Enam peran bawaan: Owner, Admin, Penulis Kon
 | Mengelola langganan/pembayaran | Ya | Ya | Tidak | Tidak | Ya | Baca |
 | Melihat laporan | Ya | Ya | Konten | Konten | Bisnis | Operasional |
 
-Murid dibuat atau diimpor melalui proses eksternal/provisi. Aplikasi mendukung pencarian, impor/provisi, penonaktifan, dan permintaan reset kredensial; kredensial murid tidak dikelola panel ini.
+Murid dibuat atau diimpor melalui proses eksternal/provisi. CRUD panel mencakup pencarian, lihat/edit profil, provisi/undangan, penonaktifan login, permintaan reset kredensial, serta penutupan akun. Undangan tanpa percobaan dapat dihapus; akun yang sudah dipakai tidak dihapus permanen. Kredensial murid tidak dikelola panel ini.
+
+Owner dapat mengundang, membaca, mengedit, menonaktifkan/mengaktifkan, dan menghapus undangan staf yang belum digunakan; sistem menjaga minimal satu Owner aktif. Finance dapat membuat, membaca, mengedit, mengaktifkan/menonaktifkan, dan menghapus metode pembayaran yang belum memiliki transaksi. Metode yang punya riwayat hanya dapat dinonaktifkan agar catatan lama tetap utuh.
 
 Catat aktor, waktu, objek, perubahan sebelum/sesudah, dan alasan untuk perubahan peran, soal, akses akun, langganan, serta pembayaran. Riwayat bersifat append-only untuk pengguna aplikasi.
 
@@ -106,7 +111,7 @@ Kurator membuat versi Kerangka TKA baru dan mengimpor katalog resminya. Soal dar
 
 ## Batas demo pertama
 
-Demo menunjukkan navigasi dashboard, bank soal dan editor, siklus review, paket tes dengan revisi terpilih, daftar murid, langganan/pembayaran, dan ringkasan analitik menggunakan data contoh. Tombol aksi mengubah state browser agar alur dapat dicoba; refresh mengembalikan data contoh. Demo tidak mengirim pembayaran, menyimpan data, mengautentikasi pengguna, atau mengakses data siswa nyata.
+Demo menunjukkan navigasi dashboard, CRUD bank soal dan paket tes, editor soal dengan LaTeX.js serta unggahan/pratinjau gambar, pratinjau murid dan uji coba yang menilai jawaban, CRUD akun murid dan staf, CRUD metode pembayaran, siklus review, dan ringkasan analitik menggunakan data contoh. Tombol aksi mengubah state browser agar alur dapat dicoba; refresh mengembalikan data contoh. Demo tidak mengirim pembayaran, menyimpan data, mengautentikasi pengguna, atau mengakses data siswa nyata.
 
 ## Kriteria MVP operasional
 
