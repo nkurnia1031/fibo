@@ -75,7 +75,7 @@ test('owner can add, preview, and edit LaTeX blocks in a question', async ({ pag
   await expect(formulaDialog.locator('.latex-preview')).toBeVisible()
   await formulaDialog.getByRole('button', { name: 'Tambahkan rumus' }).click()
 
-  await promptEditor.getByRole('button', { name: 'Edit rumus 2' }).click()
+  await promptEditor.getByRole('button', { name: 'Edit rumus 1' }).click()
   formulaDialog = page.getByRole('dialog', { name: 'Edit rumus' })
   await formulaDialog.getByLabel('Rumus LaTeX').fill('x^2 + 2')
   await formulaDialog.getByRole('button', { name: 'Simpan perubahan' }).click()
@@ -107,7 +107,7 @@ test('owner can add, preview, and edit LaTeX blocks in a question', async ({ pag
   questionRow = page.getByRole('row', { name: /Soal formula QA/ })
   await questionRow.getByRole('button', { name: 'Edit' }).click()
   const savedPromptEditor = page.getByRole('group', { name: 'Pertanyaan' })
-  await savedPromptEditor.getByRole('button', { name: 'Edit rumus 2' }).click()
+  await savedPromptEditor.getByRole('button', { name: 'Edit rumus 1' }).click()
   formulaDialog = page.getByRole('dialog', { name: 'Edit rumus' })
   await expect(formulaDialog.getByLabel('Rumus LaTeX')).toHaveValue('x^2 + 2')
   await formulaDialog.getByRole('button', { name: 'Tutup modal rumus' }).click()

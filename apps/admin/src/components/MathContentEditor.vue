@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue'
-import { Plus, Type } from 'lucide-vue-next'
+import { Pencil, Sigma, Trash2, Type } from 'lucide-vue-next'
 import { parseMathContent, serializeMathContent } from '../math-content'
 import LatexFormulaModal from './LatexFormulaModal.vue'
 import LatexText from './LatexText.vue'
@@ -28,6 +28,10 @@ function makeText(content = '') {
 
 function makeFormula(value, display = false) {
   return { type: 'formula', value, display, id: `content-block-${++nextBlockId}` }
+}
+
+function formulaNumber(blockIndex) {
+  return blocks.value.slice(0, blockIndex + 1).filter((block) => block.type === 'formula').length
 }
 
 function serialize() {
@@ -160,6 +164,12 @@ function removeFormula(block) {
 
 <template>
   <div class="math-content-editor" :class="{ compact }" role="group" :aria-label="label">
+    <div class="math-content-toolbar" role="toolbar" :aria-label="`${label} alat editor`">
+      <span>Sisipkan</span>
+      <button type="button" aria-label="Tambah teks" title="Tambah blok teks" @mousedown.prevent @click="addText"><Type :size="15" /> Teks</button>
+      <button class="formula-insert-button" type="button" aria-label="Tambah rumus LaTeX" title="Tambah komponen rumus LaTeX" @mousedown.prevent @click="addFormula"><Sigma :size="16" /> {{ compact ? 'Rumus' : 'Rumus LaTeX' }}</button>
+    </div>
+
     <div class="math-content-blocks">
       <div v-for="(block, index) in blocks" :key="block.id" class="math-content-block">
         <div v-if="block.type === 'text'" class="math-text-block">
@@ -174,19 +184,16 @@ function removeFormula(block) {
           />
         </div>
         <div v-else class="math-formula-block">
-          <button class="math-formula-card" type="button" :aria-label="`Edit rumus ${index + 1}`" @click="editFormula(block)">
-            <span class="math-formula-card-label">{{ block.display ? 'PERSAMAAN' : 'RUMUS' }} · klik untuk edit</span>
+          <div class="math-formula-card">
+            <span class="math-formula-card-label">{{ block.display ? 'PERSAMAAN' : 'RUMUS LATEX' }} · {{ formulaNumber(index) }}</span>
             <LatexText :text="block.display ? `\\[${block.value}\\]` : `\\(${block.value}\\)`" />
-          </button>
-          <button class="math-formula-remove" type="button" :aria-label="`Hapus rumus ${index + 1}`" @click="removeFormula(block)">Hapus</button>
+          </div>
+          <div class="math-formula-actions">
+            <button class="math-formula-edit" type="button" :aria-label="`Edit rumus ${formulaNumber(index)}`" title="Edit rumus" @click="editFormula(block)"><Pencil :size="13" /> Ubah</button>
+            <button class="math-formula-remove" type="button" :aria-label="`Hapus rumus ${formulaNumber(index)}`" title="Hapus rumus" @click="removeFormula(block)"><Trash2 :size="13" /> Hapus</button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="math-content-toolbar">
-      <span>Konten</span>
-      <button type="button" aria-label="Tambah teks" @mousedown.prevent @click="addText"><Type :size="14" /> Teks</button>
-      <button type="button" aria-label="Tambah rumus LaTeX" @mousedown.prevent @click="addFormula"><b>ƒx</b> Rumus</button>
     </div>
 
     <LatexFormulaModal

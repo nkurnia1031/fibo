@@ -444,23 +444,33 @@ h1 { color: #283833; font-size: clamp(25px, 2vw, 30px); font-weight: 650; letter
 .math-content-editor { display: grid; min-width: 0; gap: 6px; margin-bottom: 12px; }
 .math-content-blocks { display: grid; gap: 6px; }
 .math-content-block { min-width: 0; }
-.math-text-block textarea { display: block; width: 100%; min-height: 80px; border: 1px solid #e1e9e4; border-radius: 7px; background: #fff; color: #46564d; padding: 10px; font: inherit; font-size: 10px; line-height: 1.65; resize: vertical; }
+.math-text-block textarea { display: block; width: 100%; min-height: 80px; border: 1px solid #e1e9e4; border-radius: 7px; background: #fff; color: #46564d; padding: 10px; font: inherit; font-size: 12px; line-height: 1.65; resize: vertical; }
 .math-text-block textarea:focus { border-color: #91b49c; outline: 0; box-shadow: 0 0 0 3px #eaf4ed; }
 .math-text-block textarea::placeholder { color: #a3ada7; }
 .math-content-editor.compact { flex: 1; margin: 0; }
-.math-content-editor.compact .math-text-block textarea { min-height: 36px; height: 38px; resize: vertical; padding: 8px; }
-.math-formula-block { display: flex; min-width: 0; align-items: center; gap: 7px; border: 1px solid #dfe9e2; border-radius: 7px; background: #f7faf7; padding: 6px; }
-.math-formula-card { display: grid; min-width: 0; flex: 1; justify-items: start; gap: 4px; border: 0; border-radius: 5px; background: transparent; color: #42584a; padding: 5px 7px; text-align: left; }
-.math-formula-card:hover { background: #edf4ef; }
+.math-content-editor.compact .math-text-block textarea { min-height: 36px; height: 38px; resize: vertical; padding: 8px; font-size: 11px; }
+.math-formula-block { display: flex; min-width: 0; align-items: center; gap: 10px; border: 1px solid #dfe9e2; border-radius: 7px; background: #f7faf7; padding: 8px; }
+.math-formula-card { display: grid; min-width: 0; flex: 1; justify-items: start; gap: 5px; color: #42584a; padding: 5px 7px; }
 .math-formula-card-label { color: #8c9b91; font-size: 8px; font-weight: 680; letter-spacing: .06em; }
 .math-formula-card .latex-preview { width: auto; max-width: 100%; color: #43594a; font-size: 13px; }
-.math-formula-remove { flex: 0 0 auto; border: 0; background: transparent; color: #9b766b; padding: 6px; font-size: 9px; }
-.math-formula-remove:hover { color: #a34336; }
-.math-content-toolbar { display: flex; align-items: center; gap: 5px; }
-.math-content-toolbar > span { margin-right: auto; color: #9aa69e; font-size: 8px; }
-.math-content-toolbar button { display: inline-flex; min-height: 27px; align-items: center; gap: 5px; border: 1px solid #e1e8e3; border-radius: 5px; background: #fff; color: #63746a; padding: 0 8px; font-size: 9px; }
-.math-content-toolbar button:hover { border-color: #c8d8cc; background: #f7faf7; color: #426d53; }
-.math-content-toolbar button b { color: #a67c4f; font-family: Georgia, serif; font-size: 12px; }
+.math-formula-actions { display: flex; flex: 0 0 auto; gap: 5px; }
+.math-formula-edit, .math-formula-remove { display: inline-flex; min-height: 32px; align-items: center; gap: 5px; border: 1px solid #e0e8e2; border-radius: 5px; background: #fff; color: #607267; padding: 0 9px; font-size: 10px; cursor: pointer; }
+.math-formula-edit:hover { border-color: #c8d8cc; background: #f0f7f2; color: #426d53; }
+.math-formula-remove { color: #9b766b; }
+.math-formula-remove:hover { border-color: #efd8d3; background: #fff8f6; color: #a34336; }
+.math-content-toolbar { display: flex; align-items: center; gap: 7px; margin-bottom: 2px; border: 1px solid #e1e9e3; border-radius: 8px; background: #f7faf7; padding: 6px 8px; }
+.math-content-toolbar > span { margin-right: auto; color: #7f8f84; font-size: 10px; font-weight: 620; }
+.math-content-toolbar button { display: inline-flex; min-height: 34px; align-items: center; justify-content: center; gap: 6px; border: 1px solid #dfe8e1; border-radius: 6px; background: #fff; color: #566a5d; padding: 0 11px; font-size: 11px; font-weight: 560; cursor: pointer; transition: background .16s ease, border-color .16s ease, color .16s ease; }
+.math-content-toolbar button:hover { border-color: #bfd3c4; background: #eff6f1; color: #356c4c; }
+.math-content-toolbar button:focus-visible, .math-formula-actions button:focus-visible { outline: 3px solid #c7dfcd; outline-offset: 2px; }
+.math-content-toolbar .formula-insert-button { border-color: #c7decf; background: #eaf4ed; color: #34724c; font-weight: 680; }
+.math-content-toolbar .formula-insert-button:hover { border-color: #9dc2a7; background: #dfefe3; color: #285f3d; }
+.math-content-editor.compact .math-content-toolbar { flex-wrap: nowrap; gap: 4px; margin-bottom: 0; border: 0; background: transparent; padding: 0 0 2px; }
+.math-content-editor.compact .math-content-toolbar > span { display: none; }
+.math-content-editor.compact .math-content-toolbar button { min-height: 28px; flex: 1; gap: 4px; padding: 0 6px; font-size: 9px; white-space: nowrap; }
+.math-content-editor.compact .math-formula-block { align-items: flex-start; flex-wrap: wrap; }
+.math-content-editor.compact .math-formula-actions { margin-left: auto; }
+.math-content-editor.compact .math-formula-actions button { min-height: 27px; padding: 0 7px; font-size: 9px; }
 .math-hint { margin-top: -4px; }
 .math-hint > span { display: grid; width: 17px; height: 17px; flex: 0 0 auto; place-items: center; border-radius: 5px; background: #f5eee5; color: #ad8258; font-family: Georgia, serif; font-size: 10px; font-weight: 700; }
 .option-edit { align-items: flex-start; min-height: 0; padding: 7px; }
