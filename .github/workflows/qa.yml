@@ -1,0 +1,193 @@
+name: QA and QC
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API tests and style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Install API dependencies
+        working-directory: apps/api
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Check PHP formatting
+        working-directory: apps/api
+        run: vendor/bin/pint --test
+
+      - name: Run API unit and feature tests
+        working-directory: apps/api
+        run: vendor/bin/phpunit --configuration phpunit.xml
+
+  admin:
+    name: Admin unit tests and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+
+      - name: Install admin dependencies
+        working-directory: apps/admin
+        run: npm ci
+
+      - name: Run admin unit tests
+        working-directory: apps/admin
+        run: npm run test:unit
+
+      - name: Audit production dependencies
+        working-directory: apps/admin
+        run: npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high
+
+      - name: Build admin app
+        working-directory: apps/admin
+        run: npm run build
+
+  e2e:
+    name: Browser E2E on MySQL
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: fibo_test
+          MYSQL_USER: fibo
+          MYSQL_PASSWORD: fibo-test-password
+          MYSQL_ROOT_PASSWORD: root-test-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot-test-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_URL: http://127.0.0.1:8000
+      APP_CONFIG_CACHE: /tmp/fibo-e2e-config.php
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: fibo_test
+      DB_USERNAME: fibo
+      DB_PASSWORD: fibo-test-password
+      DB_URL: ''
+      CACHE_STORE: array
+      SESSION_DRIVER: file
+      SESSION_SECURE_COOKIE: 'false'
+      SESSION_SAME_SITE: lax
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      BCRYPT_ROUNDS: 4
+      FIBO_OWNER_NAME: QA Owner
+      FIBO_OWNER_EMAIL: qa-owner@example.test
+      FIBO_OWNER_PASSWORD: QAFiboPass-2026-Temporary
+      FIBO_REVIEWER_NAME: QA Reviewer
+      FIBO_REVIEWER_EMAIL: qa-reviewer@example.test
+      FIBO_REVIEWER_PASSWORD: QAFiboPass-2026-Reviewer
+      E2E_OWNER_EMAIL: qa-owner@example.test
+      E2E_OWNER_PASSWORD: QAFiboPass-2026-Temporary
+      E2E_OWNER_NEW_PASSWORD: QA-New-Password-For-Owner-2026
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+          tools: composer:v2
+
+      - name: Install API dependencies
+        working-directory: apps/api
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+
+      - name: Install admin dependencies
+        working-directory: apps/admin
+        run: npm ci
+
+      - name: Build admin app for the API host
+        working-directory: apps/admin
+        run: npm run build
+
+      - name: Install built admin app into Laravel public directory
+        run: |
+          cp apps/admin/dist/index.html apps/api/public/spa.html
+          cp -a apps/admin/dist/assets apps/api/public/
+
+      - name: Migrate and seed the disposable MySQL database
+        working-directory: apps/api
+        run: php artisan migrate:fresh --seed --force
+
+      - name: Start Laravel
+        working-directory: apps/api
+        run: nohup php artisan serve --host=127.0.0.1 --port=8000 > /tmp/fibo-laravel.log 2>&1 &
+
+      - name: Wait for Laravel
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/up > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/fibo-laravel.log
+          exit 1
+
+      - name: Install Playwright Chromium
+        working-directory: apps/admin
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser E2E
+        working-directory: apps/admin
+        run: npm run test:e2e
+
+      - name: Save browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-e2e-results
+          path: |
+            apps/admin/test-results
+            apps/admin/playwright-report
+          if-no-files-found: ignore

@@ -18,7 +18,14 @@ class StudentAccountFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'external_id' => 'student-'.fake()->unique()->bothify('########'),
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'school' => fake()->company(),
+            'status' => 'Aktif',
+            'attempt_quota' => 15,
+            'attempts_used' => fake()->numberBetween(0, 15),
+            'access_expires_at' => now()->addDays(30),
         ];
     }
 }
