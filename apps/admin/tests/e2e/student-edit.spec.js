@@ -1,24 +1,49 @@
 import { expect, test } from '@playwright/test'
 
-test('owner can edit a student and create and edit LaTeX blocks in a question', async ({ page }) => {
+async function submitLogin(page, password) {
+  await page.goto('/')
+  await page.getByLabel('Email', { exact: true }).fill(process.env.E2E_OWNER_EMAIL)
+  await page.getByLabel('Kata sandi', { exact: true }).fill(password)
+  await page.getByRole('button', { name: 'Masuk' }).click()
+}
+
+async function signInOwner(page) {
+  await submitLogin(page, process.env.E2E_OWNER_NEW_PASSWORD)
+  await expect(page.getByRole('button', { name: 'Murid', exact: true })).toBeVisible()
+}
+
+test.beforeAll(async ({ browser }) => {
+  const page = await browser.newPage()
+  await submitLogin(page, process.env.E2E_OWNER_PASSWORD)
+
+  const passwordChangeField = page.getByLabel('Kata sandi sementara', { exact: true })
+  try {
+    await passwordChangeField.waitFor({ state: 'visible', timeout: 5_000 })
+  } catch {
+    await page.getByLabel('Kata sandi', { exact: true }).fill(process.env.E2E_OWNER_NEW_PASSWORD)
+    await page.getByRole('button', { name: 'Masuk' }).click()
+    await expect(page.getByRole('button', { name: 'Murid', exact: true })).toBeVisible()
+    await page.close()
+    return
+  }
+
+  await passwordChangeField.fill(process.env.E2E_OWNER_PASSWORD)
+  await page.getByLabel('Kata sandi baru', { exact: true }).fill(process.env.E2E_OWNER_NEW_PASSWORD)
+  await page.getByLabel('Ulangi kata sandi baru', { exact: true }).fill(process.env.E2E_OWNER_NEW_PASSWORD)
+  await page.getByRole('button', { name: 'Simpan kata sandi' }).click()
+  await expect(page.getByRole('button', { name: 'Murid', exact: true })).toBeVisible()
+  await page.close()
+})
+
+test('owner can edit a student and see the saved profile after reload', async ({ page }) => {
+  await signInOwner(page)
+  const studentsNavigation = page.getByRole('button', { name: 'Murid', exact: true })
   const dialogs = []
   page.on('dialog', async (dialog) => {
     dialogs.push(dialog.message())
     await dialog.dismiss()
   })
 
-  await page.goto('/')
-  await page.getByLabel('Email', { exact: true }).fill(process.env.E2E_OWNER_EMAIL)
-  await page.getByLabel('Kata sandi', { exact: true }).fill(process.env.E2E_OWNER_PASSWORD)
-  await page.getByRole('button', { name: 'Masuk' }).click()
-
-  await page.getByLabel('Kata sandi sementara', { exact: true }).fill(process.env.E2E_OWNER_PASSWORD)
-  await page.getByLabel('Kata sandi baru', { exact: true }).fill(process.env.E2E_OWNER_NEW_PASSWORD)
-  await page.getByLabel('Ulangi kata sandi baru', { exact: true }).fill(process.env.E2E_OWNER_NEW_PASSWORD)
-  await page.getByRole('button', { name: 'Simpan kata sandi' }).click()
-
-  const studentsNavigation = page.getByRole('button', { name: 'Murid', exact: true })
-  await expect(studentsNavigation).toBeVisible()
   await studentsNavigation.click()
 
   const studentRow = page.getByRole('row', { name: /Alya Demo/ })
@@ -34,7 +59,10 @@ test('owner can edit a student and create and edit LaTeX blocks in a question', 
   await page.reload()
   await page.getByRole('button', { name: 'Murid', exact: true }).click()
   await expect(page.getByRole('row', { name: /Alya Demo QA/ })).toBeVisible()
+})
 
+test('owner can add, preview, and edit LaTeX blocks in a question', async ({ page }) => {
+  await signInOwner(page)
   await page.getByRole('button', { name: /^Bank soal/ }).click()
   await page.getByRole('button', { name: 'Tulis soal' }).click()
   await page.getByLabel('Judul internal').fill('Soal formula QA')

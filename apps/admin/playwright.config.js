@@ -10,7 +10,6 @@ export default defineConfig({
   timeout: 90_000,
   expect: { timeout: 15_000 },
   use: {
-    actionTimeout: 15_000,
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8000',
     browserName: 'chromium',
     headless: true,
