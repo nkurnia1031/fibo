@@ -16,6 +16,24 @@ class StoreQuestionRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $removeImage = $this->input('removeImage');
+        if (! is_string($removeImage)) {
+            return;
+        }
+
+        $normalized = match (strtolower(trim($removeImage))) {
+            'true' => true,
+            'false' => false,
+            default => $removeImage,
+        };
+
+        if (is_bool($normalized)) {
+            $this->merge(['removeImage' => $normalized]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
