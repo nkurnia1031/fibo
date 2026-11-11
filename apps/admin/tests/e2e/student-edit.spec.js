@@ -86,7 +86,7 @@ test('owner can add, preview, and edit LaTeX blocks in a question', async ({ pag
   formulaDialog = page.getByRole('dialog', { name: 'Tambah rumus' })
   await formulaDialog.getByLabel('Rumus LaTeX').fill('3')
   await formulaDialog.getByRole('button', { name: 'Tambahkan rumus' }).click()
-  await page.getByLabel('Pilihan B teks 1').fill('4')
+  await page.getByLabel('Pilihan B teks 1').fill(String.raw`Inline $f(x) = \int_{-\infty}^\infty \hat f(\xi)\,e^{2 \pi i \xi x} \, d\xi$ dan display $$f(n) = \begin{cases} \frac{n}{2}, & \text{if } n\text{ is even} \\ 3n+1, & \text{if } n\text{ is odd} \end{cases}$$`)
 
   const explanationEditor = page.getByRole('group', { name: 'Pembahasan' })
   await explanationEditor.getByLabel('Pembahasan teks 1').fill('Substitusikan nilai ke')
@@ -99,7 +99,7 @@ test('owner can add, preview, and edit LaTeX blocks in a question', async ({ pag
   let questionRow = page.getByRole('row', { name: /Soal formula QA/ })
   await expect(questionRow).toBeVisible()
   await questionRow.getByRole('button', { name: 'Pratinjau' }).click()
-  await expect(page.locator('.question-run-modal .latex-preview')).toHaveCount(3)
+  await expect(page.locator('.question-run-modal .latex-preview')).toHaveCount(4)
   await page.locator('.question-run-modal').getByRole('button', { name: 'Tutup', exact: true }).last().click()
 
   await page.reload()

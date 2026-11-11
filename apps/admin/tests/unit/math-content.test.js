@@ -12,6 +12,21 @@ test('parses existing inline and display formulas into editable content blocks',
   ])
 })
 
+test('normalizes dollar-delimited inline and display formulas', () => {
+  const inline = String.raw`f(x) = \int_{-\infty}^\infty \hat f(\xi)\,e^{2 \pi i \xi x} \, d\xi`
+  const display = String.raw`f(n) = \begin{cases} \frac{n}{2}, & \text{if } n\text{ is even} \\ 3n+1, & \text{if } n\text{ is odd} \end{cases}`
+  const source = `Inline $${inline}$ and display $$${display}$$`
+
+  assert.deepEqual(parseMathContent(source), [
+    { type: 'text', content: 'Inline ' },
+    { type: 'formula', value: inline, display: false },
+    { type: 'text', content: ' and display ' },
+    { type: 'formula', value: display, display: true },
+  ])
+
+  assert.equal(serializeMathContent(parseMathContent(source)), String.raw`Inline \(${inline}\) and display \[${display}\]`)
+})
+
 test('serializes edited formulas back into content supported by the renderer', () => {
   const blocks = [
     { type: 'text', content: 'Tentukan nilai ' },
