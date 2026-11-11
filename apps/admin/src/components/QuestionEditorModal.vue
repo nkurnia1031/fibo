@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { Check, ImagePlus, Lightbulb, Plus, Save, X } from 'lucide-vue-next'
-import { createQuestion, createQuestionRevision, updateQuestion } from '../demo-store'
+import { saveQuestionRecord } from '../demo-store'
 import LatexText from './LatexText.vue'
 
 const props = defineProps({ mode: { type: String, default: 'create' }, question: { type: Object, default: null } })
@@ -20,6 +20,10 @@ const selectedMultiple = ref([])
 const categories = ref([{ statement: '', answer: 'Benar' }])
 const imagePreview = ref('')
 const imageUrl = ref('')
+const imageFile = ref(null)
+const removeImage = ref(false)
+const saveError = ref('')
+const saving = ref(false)
 const isPublishedRevision = computed(() => props.mode === 'revise')
 const heading = computed(() => props.mode === 'create' ? 'Tulis soal TKA' : isPublishedRevision.value ? 'Buat revisi soal' : 'Edit soal')
 const canSave = computed(() => {
@@ -45,6 +49,8 @@ watch(() => props.question, (question) => {
   categories.value = question.categoryStatements?.map((statement, index) => ({ statement, answer: question.categoryAnswers?.[index] || 'Benar' })) || [{ statement: '', answer: 'Benar' }]
   imageUrl.value = question.imageUrl || ''
   imagePreview.value = question.imageUrl || ''
+  imageFile.value = null
+  removeImage.value = false
 }, { immediate: true })
 
 function toggleMultiple(index) {
@@ -56,13 +62,22 @@ function onImageSelected(event) {
   const file = event.target.files?.[0]
   if (!file) return
   imagePreview.value = URL.createObjectURL(file)
+  imageFile.value = file
   imageUrl.value = imagePreview.value
+  removeImage.value = false
+}
+function clearImage() {
+  imagePreview.value = ''
+  imageUrl.value = ''
+  imageFile.value = null
+  removeImage.value = true
 }
 function insertFormula() {
   prompt.value += `${prompt.value ? '\n' : ''}Gunakan rumus $a^2 + b^2 = c^2$ untuk menentukan panjang sisi.`
 }
-function save(status = 'Draf') {
+async function save(status = 'Draf') {
   if (!canSave.value) return
+  saveError.value = ''
   const cleanOptions = options.value.map((item) => item.trim()).filter(Boolean)
   const payload = {
     title: title.value.trim(), prompt: prompt.value.trim(), explanation: explanation.value.trim(), commonMistakes: misconception.value.trim(), tags: tags.value.split(',').map((tag) => tag.trim()).filter(Boolean), format: format.value,
@@ -71,13 +86,18 @@ function save(status = 'Draf') {
     correctOptions: selectedMultiple.value.filter((index) => index < cleanOptions.length),
     categoryStatements: categories.value.map((item) => item.statement.trim()).filter(Boolean),
     categoryAnswers: categories.value.filter((item) => item.statement.trim()).map((item) => item.answer),
-    imageUrl: imageUrl.value, status,
+    imageUrl: imageUrl.value, imageFile: imageFile.value, removeImage: removeImage.value, status,
   }
-  if (props.mode === 'revise') createQuestionRevision(props.question, payload)
-  else if (props.mode === 'edit' && props.question) updateQuestion(props.question, payload)
-  else createQuestion(payload)
-  emit('saved')
-  emit('close')
+  saving.value = true
+  try {
+    await saveQuestionRecord(props.question, payload, props.mode)
+    emit('saved')
+    emit('close')
+  } catch (error) {
+    saveError.value = error.message
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -92,7 +112,7 @@ function save(status = 'Draf') {
           <label class="field-label">Subelemen utama<span class="required">*</span><select v-model="topic"><option>Bilangan</option><option>Aljabar</option><option>Geometri dan Pengukuran</option><option>Data dan Peluang</option></select></label>
           <div class="editor-label-row"><label class="field-label">Pertanyaan<span class="required">*</span></label><div class="editor-tools"><button title="Sisipkan contoh rumus" @click="insertFormula">ƒx</button><label class="image-tool" title="Unggah gambar"><ImagePlus :size="16" /><input type="file" accept="image/png,image/jpeg,image/webp" @change="onImageSelected" /></label></div></div>
           <textarea v-model="prompt" class="prompt-input" rows="5" placeholder="Tulis pertanyaan. Gunakan notasi LaTeX, misalnya $x^2 + 3x = 10$." />
-          <div v-if="imagePreview" class="image-preview"><img :src="imagePreview" alt="Pratinjau gambar soal" /><button @click="imagePreview = ''; imageUrl = ''"><X :size="14" /> Hapus gambar</button></div>
+          <div v-if="imagePreview" class="image-preview"><img :src="imagePreview" alt="Pratinjau gambar soal" /><button @click="clearImage"><X :size="14" /> Hapus gambar</button></div>
           <div class="math-hint"><Lightbulb :size="14" /> Persamaan dirender dengan LaTeX.js. Gunakan notasi matematika standar; gambar disimpan pada revisi soal.</div>
           <section class="answer-editor"><div class="subsection-heading"><b>Jawaban</b><span class="required">*</span><small>{{ format === 'Pilihan ganda' ? 'Pilih satu jawaban benar' : format === 'PG kompleks · MCMA' ? 'Pilih semua jawaban yang benar' : 'Tentukan jawaban untuk setiap pernyataan' }}</small></div><div v-if="format !== 'PG kompleks · Kategori'" class="option-list"><label v-for="(option, index) in options" :key="index" class="option-edit"><input v-if="format === 'Pilihan ganda'" v-model="selectedSingle" type="radio" :value="index" /><input v-else type="checkbox" :checked="selectedMultiple.includes(index)" @change="toggleMultiple(index)" /><span class="option-letter">{{ String.fromCharCode(65 + index) }}</span><input v-model="options[index]" :placeholder="`Tulis pilihan ${String.fromCharCode(65 + index)}`" /></label><button class="add-option" @click="options.push('')"><Plus :size="14" /> Tambah pilihan</button></div><div v-else class="category-list"><div v-for="(item, index) in categories" :key="index" class="category-edit"><input v-model="item.statement" placeholder="Pernyataan" /><select v-model="item.answer"><option>Benar</option><option>Salah</option></select><button class="icon-button tiny danger-icon" title="Hapus pernyataan" @click="categories.splice(index, 1)"><X :size="14" /></button></div><button class="add-option" @click="categories.push({ statement: '', answer: 'Benar' })"><Plus :size="14" /> Tambah pernyataan</button></div></section>
           <label class="field-label explanation-field">Pembahasan<span class="required">*</span><textarea v-model="explanation" rows="3" placeholder="Jelaskan langkah penyelesaian dan konsep yang digunakan." /></label>
@@ -100,7 +120,7 @@ function save(status = 'Draf') {
         </div>
         <aside class="author-preview"><div class="preview-top"><span class="section-kicker">PRATINJAU MURID</span><span class="preview-badge"><i></i> Real-time</span></div><div class="preview-paper"><div class="preview-item-count">SOAL · <span>1 poin</span></div><h3>{{ title || 'Judul soal akan tampil di sini' }}</h3><div class="preview-prompt"><LatexText :text="prompt || 'Tulis pertanyaan di panel kiri untuk melihat pratinjau.'" /></div><img v-if="imagePreview" class="preview-image" :src="imagePreview" alt="Gambar soal" /><div v-if="format !== 'PG kompleks · Kategori'" class="preview-options"><div v-for="(option, index) in options" :key="index" class="preview-option"><span>{{ String.fromCharCode(65 + index) }}</span><LatexText :text="option || `Pilihan ${String.fromCharCode(65 + index)}`" /></div></div><div v-else class="preview-categories"><div v-for="(item, index) in categories" :key="index"><LatexText :text="item.statement || `Pernyataan ${index + 1}`" /><span>Benar</span><span>Salah</span></div></div><div class="preview-meta"><span>{{ topic }}</span><span>{{ level }}</span></div></div><div class="preview-footer"><span>Penilaian otomatis</span><b>1 poin untuk jawaban penuh benar</b></div><div class="preview-revision"><span>Kerangka</span><b>SMP/MTs · 2025.1</b><small>{{ isPublishedRevision ? 'Revisi terbit tetap tersimpan' : 'Draf dapat diperbarui' }}</small></div></aside>
       </div>
-      <footer class="author-footer"><div class="save-state"><span class="save-dot"></span> Perubahan tersimpan di demo ini</div><div><button class="button button-quiet" @click="emit('close')">Batal</button><button class="button button-outline" :disabled="!canSave" @click="save('Draf')"><Save :size="15" /> Simpan draf</button><button class="button button-primary" :disabled="!canSave" @click="save('Pemeriksaan')"><Check :size="15" /> Simpan & kirim review</button></div></footer>
+      <footer class="author-footer"><div class="save-state"><span class="save-dot"></span> Tersimpan ke server saat disimpan</div><div><p v-if="saveError" class="auth-error">{{ saveError }}</p><button class="button button-quiet" :disabled="saving" @click="emit('close')">Batal</button><button class="button button-outline" :disabled="!canSave || saving" @click="save('Draf')"><Save :size="15" /> Simpan draf</button><button class="button button-primary" :disabled="!canSave || saving" @click="save('Pemeriksaan')"><Check :size="15" /> Simpan & kirim review</button></div></footer>
     </section>
   </div>
 </template>

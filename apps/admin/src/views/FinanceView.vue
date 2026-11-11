@@ -12,9 +12,24 @@ const filteredPayments = computed(() => store.payments.filter((payment) => `${pa
 const filteredMethods = computed(() => store.paymentMethods.filter((method) => `${method.name} ${method.type} ${method.provider}`.toLowerCase().includes(query.value.toLowerCase())))
 function statusClass(value) { return value === 'Terbayar' || value === 'Aktif' ? 'status-terbit' : value === 'Menunggu' ? 'status-review' : 'status-arsip' }
 function openMethod(method = null) { activeMethod.value = method; methodForm.value = method ? { name: method.name, type: method.type, provider: method.provider, fee: method.fee } : { name: '', type: 'Virtual account', provider: 'Midtrans', fee: 'Sesuai kontrak' }; methodModal.value = true }
-function saveMethod() { if (!methodForm.value.name.trim()) return; if (activeMethod.value) savePaymentMethod(activeMethod.value, methodForm.value); else createPaymentMethod(methodForm.value); methodModal.value = false }
-function toggleMethod(method) { method.status = method.status === 'Aktif' ? 'Nonaktif' : 'Aktif' }
-function removeMethod(method) { if (method.usage > 0) { window.alert('Metode ini memiliki riwayat transaksi. Nonaktifkan agar transaksi lama tetap dapat dibaca.'); return } if (window.confirm(`Hapus metode ${method.name}?`)) deleteUnusedPaymentMethod(method) }
+async function saveMethod() {
+  if (!methodForm.value.name.trim()) return
+  try {
+    if (activeMethod.value) await savePaymentMethod(activeMethod.value, methodForm.value)
+    else await createPaymentMethod(methodForm.value)
+    methodModal.value = false
+  } catch (error) { window.alert(error.message) }
+}
+async function toggleMethod(method) {
+  try { await savePaymentMethod(method, { isActive: method.status !== 'Aktif' }) }
+  catch (error) { window.alert(error.message) }
+}
+async function removeMethod(method) {
+  if (method.usage > 0) { window.alert('Metode ini memiliki riwayat transaksi. Nonaktifkan agar transaksi lama tetap dapat dibaca.'); return }
+  if (!window.confirm(`Hapus metode ${method.name}?`)) return
+  try { await deleteUnusedPaymentMethod(method) }
+  catch (error) { window.alert(error.message) }
+}
 </script>
 
 <template>
