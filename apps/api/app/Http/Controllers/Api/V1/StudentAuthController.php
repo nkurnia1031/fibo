@@ -34,7 +34,7 @@ class StudentAuthController extends Controller
             'status' => 'Aktif',
         ]);
 
-        $bonus = (int) WalletSetting::query()->firstOrCreate(['key' => 'default'])->signup_bonus_points;
+        $bonus = (int) WalletSetting::query()->firstOrCreate(['key' => 'default'], ['signup_bonus_points' => 100])->signup_bonus_points;
         if ($bonus > 0) {
             $wallet->credit(
                 $student,
@@ -144,7 +144,8 @@ class StudentAuthController extends Controller
                     'password' => $password,
                     'status' => $student->status === 'Undangan' ? 'Aktif' : $student->status,
                     'email_verified_at' => $student->status === 'Undangan' ? ($student->email_verified_at ?? now()) : $student->email_verified_at,
-                ])->setRememberToken(Str::random(60))->save();
+                ])->setRememberToken(Str::random(60));
+                $student->save();
                 AuditLog::record($request, 'student.password_reset', 'StudentAccount', (string) $student->id, ['status' => $oldStatus], [
                     'status' => $student->status,
                     'emailVerified' => $student->hasVerifiedEmail(),

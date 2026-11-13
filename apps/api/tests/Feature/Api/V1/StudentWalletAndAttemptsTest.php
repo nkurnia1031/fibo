@@ -133,7 +133,7 @@ class StudentWalletAndAttemptsTest extends TestCase
 
         $topupId = $response->json('data.id');
         $this->assertSame(0, (int) $student->fresh()->point_balance);
-        $this->assertDatabaseHas('topup_requests', ['id' => $topupId, 'status' => 'Pending']);
+        $this->assertDatabaseHas('top_up_requests', ['id' => $topupId, 'status' => 'Pending']);
 
         $finance = User::factory()->create(['role' => 'Finance', 'is_active' => true, 'must_change_password' => false]);
         $this->actingAs($finance)->get('/api/v1/top-ups/'.$topupId.'/proof')->assertOk();
@@ -410,7 +410,7 @@ class StudentWalletAndAttemptsTest extends TestCase
         $this->assertNotNull($student->fresh()->anonymized_at);
         $this->assertSame(25, (int) $student->fresh()->point_balance);
         $this->assertDatabaseHas('student_attempts', ['id' => $attempt->id, 'student_account_id' => $student->id]);
-        $this->assertDatabaseHas('topup_requests', ['id' => $topup->id, 'status' => 'Confirmed', 'payment_reference' => null, 'proof_path' => null]);
+        $this->assertDatabaseHas('top_up_requests', ['id' => $topup->id, 'status' => 'Confirmed', 'payment_reference' => null, 'proof_path' => null]);
         $this->assertDatabaseHas('point_transactions', ['id' => $transaction->id, 'points_delta' => 25, 'balance_after' => 25]);
         $this->assertSame('Transaksi dipertahankan setelah anonimisasi murid.', $transaction->fresh()->reason);
         $this->assertDatabaseMissing('student_password_reset_tokens', ['email' => 'private-student@example.test']);

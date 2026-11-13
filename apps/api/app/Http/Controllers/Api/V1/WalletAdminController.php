@@ -44,7 +44,7 @@ class WalletAdminController extends Controller
     public function settings(): JsonResponse
     {
         Gate::authorize('viewAny', PaymentMethod::class);
-        $settings = WalletSetting::query()->firstOrCreate(['key' => 'default']);
+        $settings = WalletSetting::query()->firstOrCreate(['key' => 'default'], ['signup_bonus_points' => 100]);
 
         return response()->json(['signupBonusPoints' => $settings->signup_bonus_points]);
     }
@@ -56,7 +56,7 @@ class WalletAdminController extends Controller
             'signupBonusPoints' => ['required', 'integer', 'min:0', 'max:100000000'],
             'reason' => ['required', 'string', 'max:500'],
         ]);
-        $settings = WalletSetting::query()->firstOrCreate(['key' => 'default']);
+        $settings = WalletSetting::query()->firstOrCreate(['key' => 'default'], ['signup_bonus_points' => 100]);
         $before = ['signupBonusPoints' => $settings->signup_bonus_points];
         $settings->update(['signup_bonus_points' => $data['signupBonusPoints']]);
         AuditLog::record($request, 'wallet.settings_updated', 'WalletSetting', (string) $settings->id, $before, [

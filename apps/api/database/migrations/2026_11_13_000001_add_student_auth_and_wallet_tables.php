@@ -74,7 +74,7 @@ return new class extends Migration
             'is_active' => false,
         ]);
 
-        Schema::create('topup_requests', function (Blueprint $table): void {
+        Schema::create('top_up_requests', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('student_account_id')->constrained()->restrictOnDelete();
             $table->foreignId('point_bundle_id')->nullable()->constrained()->nullOnDelete();
@@ -167,7 +167,7 @@ return new class extends Migration
         Schema::dropIfExists('student_attempts');
         Schema::dropIfExists('student_accesses');
         Schema::dropIfExists('access_offers');
-        Schema::dropIfExists('topup_requests');
+        Schema::dropIfExists('top_up_requests');
         Schema::table('payment_methods', function (Blueprint $table): void {
             $table->dropColumn(['account_name', 'account_number', 'instructions']);
         });
