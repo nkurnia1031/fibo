@@ -154,6 +154,7 @@ jobs:
         run: |
           cp apps/admin/dist/index.html apps/api/public/spa.html
           cp -a apps/admin/dist/assets apps/api/public/
+          cp docs/prototypes/student-experience.html apps/api/public/student-demo.html
 
       - name: Migrate and seed the disposable MySQL database
         working-directory: apps/api

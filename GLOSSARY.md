@@ -1,6 +1,6 @@
-# TKA Matematika
+# Fibo TKA Matematika
 
-Domain ini mengelola konten dan latihan TKA matematika untuk siswa.
+Domain ini menyajikan latihan TKA matematika untuk murid, serta mengelola konten, akses belajar, dan saldo poin.
 
 ## Bahasa
 
@@ -29,7 +29,39 @@ Kumpulan soal yang dipilih dan diurutkan secara manual, memiliki satu Jenjang da
 Satu sesi murid mengerjakan Paket tes. Percobaan menyimpan waktu mulai dan selesai, sisa atau batas waktu, respons tiap soal, skor, serta status pengumpulan.
 
 **Hak akses**:
-Izin murid untuk memakai produk dalam periode tertentu dengan kuota percobaan yang ditetapkan oleh paket langganan.
+Izin murid untuk memakai produk atau paket belajar, yang dapat dibatasi oleh masa berlaku dan kuota percobaan.
+_Avoid_: Langganan (kecuali jika benar-benar berulang)
+
+**Poin Fibo**:
+Unit saldo dalam aplikasi yang dipakai untuk membeli Hak akses. Poin Fibo bukan uang, tidak dapat ditransfer atau diuangkan, dan setiap perubahan saldo tercatat.
+_Avoid_: Skor butir, nilai latihan
+
+**Dompet poin**:
+Saldo dan riwayat kredit/debit Poin Fibo milik satu akun murid.
+
+**Transaksi poin**:
+Catatan permanen satu penerbitan, pemberian promosi, pembelian, atau koreksi Poin Fibo yang mengubah Dompet poin.
+
+**Top-up**:
+Permintaan murid untuk memperoleh Poin Fibo dengan membayar melalui kanal transfer manual yang disediakan Fibo. Poin baru masuk setelah Finance memeriksa dan mengonfirmasi transfer.
+
+**Paket top-up**:
+Penawaran yang memasangkan jumlah Poin Fibo dengan nominal uang yang harus ditransfer untuk mendapatkannya.
+
+**Pemberian promosi**:
+Penerbitan Poin Fibo tanpa pembayaran, misalnya bonus pendaftaran atau kampanye pemasaran. Pemberian promosi memiliki sumber dan alasan yang tercatat.
 
 **Pembayaran terkonfirmasi**:
-Pembayaran yang statusnya sudah diverifikasi oleh gateway atau operator berwenang. Hanya status ini yang dapat mengaktifkan atau memperpanjang Hak akses.
+Transfer uang untuk Top-up yang telah diperiksa dan dicatat Finance. Konfirmasi tersebut hanya mengkreditkan Poin Fibo; pembelian Hak akses menggunakan Poin Fibo.
+
+**Pembelian akses**:
+Transaksi yang mendebit Poin Fibo dari Dompet poin dan memberikan Hak akses jika saldo mencukupi.
+
+**Skor butir**:
+Hasil penilaian satu soal: 1 untuk jawaban penuh benar dan 0 untuk jawaban salah atau kosong. Skor butir tidak menambah atau mengurangi Poin Fibo.
+
+**Penawaran akses**:
+Penawaran komersial untuk paket tes atau materi yang menetapkan harga Poin dan syarat Hak akses, seperti masa berlaku atau kuota.
+
+**Langganan**:
+Hak akses berjangka yang dapat diperpanjang dengan mendebit Poin. Langganan bukan penagihan uang otomatis.

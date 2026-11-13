@@ -1,12 +1,12 @@
-# Fibo · Admin TKA Matematika
+# Fibo · Persiapan TKA Matematika
 
-Demo panel admin untuk alur MVP TKA Matematika.
+Website latihan TKA Matematika dengan laman murid sebagai pintu utama dan panel staf untuk mengelola konten.
 
 ## Demo
 
-Buka [demo interaktif](https://nkurnia1031.github.io/fibo/). Pilih tata letak dengan tombol di tengah bawah atau tombol panah kiri/kanan. Demo memakai data contoh sementara di browser; tidak ada login, pembayaran, atau data murid nyata.
+Buka [demo laman murid](https://nkurnia1031.github.io/fibo/). Kamu dapat mencoba pendaftaran, belanja paket dengan Poin, dan meminta Top-up manual menggunakan data simulasi di browser. Tidak ada akun atau pembayaran nyata. [Panel admin produk](https://fibo.naufix.space/admin) memerlukan akses staf.
 
-Demo mencakup CRUD draf bank soal dan paket tes, pratinjau serta uji coba soal, pengelolaan metode pembayaran, admin/staf, dan akun murid. Persamaan dirender dengan [LaTeX.js](https://latex.js.org/); perubahan demo hanya tersimpan selama halaman terbuka.
+Prototype laman murid mencakup simulasi akun, Dompet poin, pembelian paket, dan pengajuan Top-up manual. Editor soal admin menggunakan [LaTeX.js](https://latex.js.org/) di panel produk; data prototype murid hanya tersimpan selama halaman terbuka.
 
 ## Spek dan urutan pembangunan
 
@@ -16,7 +16,7 @@ Demo mencakup CRUD draf bank soal dan paket tes, pratinjau serta uji coba soal, 
 
 Stack yang disiapkan: Laravel 13 API, Vue 3 admin, dan MySQL 8.4 LTS. Backend dan MySQL belum dipakai oleh demo Pages.
 
-## Jalankan panel Vue secara lokal
+## Jalankan panel admin Vue secara lokal
 
 ```sh
 cd apps/admin
@@ -24,7 +24,7 @@ npm ci
 npm run dev
 ```
 
-Tata letak dapat dipilih dengan `?variant=desk`, `?variant=flow`, atau `?variant=focus`.
+Panel admin memakai Laravel API pada origin yang sama; untuk demo murid gunakan tautan GitHub Pages di atas.
 
 ## Mulai backend lokal
 
@@ -40,4 +40,4 @@ php artisan migrate
 php artisan serve
 ```
 
-Fondasi Laravel belum berisi alur domain MVP. Pembangunannya dipecah dalam tiket yang ditautkan dari spek.
+Backend admin dan alur penulisan soal sudah tersedia. Pendaftaran murid mandiri, Dompet Poin Fibo, Top-up manual, dan pembelian akses sedang dirinci dalam tiket yang ditautkan dari spek.

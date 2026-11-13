@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "VITE_DEMO_SWITCHER=true vite",
     "build": "vite build",
-    "build:pages": "VITE_BASE=/fibo/ VITE_DEMO_SWITCHER=true vite build",
+    "build:pages": "VITE_BASE=/fibo/admin/ VITE_DEMO_SWITCHER=true vite build",
     "test:unit": "node --test tests/unit/*.test.js",
     "test:e2e": "playwright test",
     "preview": "vite preview"
