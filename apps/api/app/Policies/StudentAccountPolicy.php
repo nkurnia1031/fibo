@@ -9,23 +9,27 @@ class StudentAccountPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->is_active && in_array($user->role, ['Owner', 'Admin', 'Support'], true);
+        return $user->is_active && in_array($user->role, ['Owner', 'Admin', 'Support', 'Finance'], true);
     }
 
     public function create(User $user): bool
     {
-        return $this->viewAny($user);
+        return $user->is_active && in_array($user->role, ['Owner', 'Admin', 'Support'], true);
     }
 
     public function update(User $user, StudentAccount $studentAccount): bool
     {
-        return $this->viewAny($user);
+        return $user->is_active && in_array($user->role, ['Owner', 'Admin', 'Support'], true);
     }
 
     public function delete(User $user, StudentAccount $studentAccount): bool
     {
-        return $this->viewAny($user)
+        return $user->is_active && in_array($user->role, ['Owner', 'Admin', 'Support'], true)
             && $studentAccount->status === 'Undangan'
-            && $studentAccount->attempts_used === 0;
+            && $studentAccount->attempts_used === 0
+            && ! $studentAccount->attempts()->exists()
+            && ! $studentAccount->pointTransactions()->exists()
+            && ! $studentAccount->topUpRequests()->exists()
+            && ! $studentAccount->accesses()->exists();
     }
 }

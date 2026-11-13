@@ -12,7 +12,7 @@ Produk perlu memberi keluwesan bagi pemasaran tanpa membuat murid membayar uang 
 - Semua akses produk dibeli menggunakan Poin dari Dompet poin. Poin tidak dapat ditransfer atau diuangkan.
 - Unit saldo disebut Poin Fibo; hasil penilaian disebut Skor/nilai agar Skor latihan tidak disalahartikan sebagai saldo belanja.
 - Top-up adalah satu-satunya alur uang: murid mengirim bukti transfer manual dan Finance memeriksa transfer sebelum Poin dikreditkan.
-- Saldo berasal dari Transaksi poin yang append-only; bonus pendaftaran, kampanye, pembelian, serta koreksi semuanya memiliki sumber dan alasan.
+- Saldo berasal dari Transaksi poin yang append-only; bonus pendaftaran, kampanye, pembelian, serta koreksi semuanya memiliki sumber dan alasan. Setelah masa retensi akun, identitas pada alasan/metadata boleh disamarkan, tetapi jenis, nilai, saldo setelah transaksi, dan riwayat kredit/debit tetap dipertahankan.
 - Pemberian akses dan pendebitan Poin dilakukan dalam satu transaksi atomik. Saldo tidak boleh negatif; pemrosesan ulang tidak boleh menggandakan debit atau kredit.
 - Paket akses berjangka dapat diperpanjang dengan Poin secara manual. Penagihan uang otomatis dan integrasi gateway tidak termasuk MVP.
 - Akun murid dibuat sendiri menggunakan nama, email, dan kata sandi, dengan verifikasi email. Identitas murid memakai autentikasi aplikasi dan guard yang terpisah dari akun staf.

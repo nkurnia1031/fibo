@@ -81,7 +81,7 @@ Catat aktor, waktu, objek, perubahan sebelum/sesudah, dan alasan untuk perubahan
 
 - Di produk, **Poin Fibo** (disebut “Poin” pada label saldo dan harga) adalah saldo belanja. Skor/nilai latihan selalu ditampilkan terpisah dan tidak dapat dibelanjakan.
 - Dompet poin memakai bilangan bulat. Poin Fibo tidak dapat ditransfer antarmurid, ditarik menjadi uang, atau membuat saldo negatif. Poin Fibo tidak kedaluwarsa pada MVP.
-- Saldo dibentuk dari Transaksi poin permanen: pembelian Poin, bonus pendaftaran/promosi, pembelian akses, pengembalian/koreksi, dan pembatalan yang memenuhi syarat. Catatan lama tidak diedit atau dihapus.
+- Saldo dibentuk dari Transaksi poin permanen: pembelian Poin, bonus pendaftaran/promosi, pembelian akses, pengembalian/koreksi, dan pembatalan yang memenuhi syarat. Nilai, jenis, serta saldo setelah transaksi tidak diedit atau dihapus; setelah masa retensi, alasan/metadata yang dapat mengidentifikasi murid disamarkan.
 - Finance mengelola Paket top-up berisi nominal transfer dan jumlah Poin. Murid memilih paket, melihat instruksi transfer, mengirim referensi/bukti, lalu mengajukan pemeriksaan.
 - Top-up berstatus `Menunggu → Terkonfirmasi` atau `Menunggu → Ditolak`. Finance memeriksa transfer di luar sistem lalu mengonfirmasi atau menolak secara manual. Poin dikreditkan tepat satu kali hanya saat dikonfirmasi; tidak ada callback gateway.
 - Registrasi memberi bonus awal yang dapat dikonfigurasi. Finance/Owner dapat menerbitkan Poin promosi atau koreksi manual dengan alasan wajib. Mesin kode promo dan referral ditunda; kampanye awal menggunakan bonus pendaftaran dan penerbitan promosi yang tercatat.
@@ -96,7 +96,7 @@ Top-up tetap mencatat nominal uang yang diperiksa untuk rekonsiliasi. Catatan ua
 
 ## Akun ditutup dan privasi
 
-Menutup akun langsung menonaktifkan login. Riwayat percobaan, Top-up, Transaksi poin, dan audit dipertahankan dalam bentuk yang tidak mengidentifikasi murid secara langsung. Rekomendasi awal: masa tenggang 24 bulan setelah penutupan, lalu anonimisasi/hapus pengenal langsung melalui pekerjaan terjadwal; durasi disimpan sebagai konfigurasi dan harus ditinjau Finance/Legal sebelum produksi. Retensi bukti transfer mengikuti kebutuhan operasional dan penelaahan tersebut.
+Menutup akun langsung menonaktifkan login. Riwayat percobaan, Top-up, Transaksi poin, dan audit dipertahankan dalam bentuk yang tidak mengidentifikasi murid secara langsung. Rekomendasi awal: masa tenggang 24 bulan setelah penutupan, lalu anonimisasi/hapus pengenal langsung melalui pekerjaan terjadwal; implementasi memakai `STUDENT_DATA_RETENTION_DAYS=730` dan dapat diubah sebelum produksi. Pekerjaan `students:anonymize-closed` berjalan setiap hari pukul 02.20 dan perlu dipanggil Laravel Scheduler dari cron aaPanel setiap menit. Catatan bukti transfer dihapus saat anonimisasi; durasi ini dan prosedur tersebut harus ditinjau Finance/Legal sebelum produksi.
 
 ## Analitik MVP
 
@@ -116,7 +116,7 @@ Hasil belajar dihitung dari percobaan yang disubmit; percobaan berlangsung ditam
 - **Wallet:** tabel ledger append-only dengan saldo konsisten, idempotency key untuk mutasi, dan debit Poin + pembuatan Hak akses dalam transaksi MySQL atomik.
 - **Top-up:** permintaan dan bukti transfer disimpan privat; Finance mengonfirmasi manual. Konfirmasi serta kredit Poin idempoten; integrasi gateway tidak termasuk MVP.
 - **Media:** gambar soal masuk ke object storage privat melalui URL unggah bertanda tangan atau endpoint backend; metadata terhubung ke revisi soal.
-- **Operasional awal:** queue database untuk pekerjaan tertunda, log terstruktur, backup MySQL harian, health check, dan pencatatan kegagalan pemeriksaan Top-up. Redis dan multi-region ditunda sampai beban mengharuskannya.
+- **Operasional awal:** queue database untuk pekerjaan tertunda, Laravel Scheduler untuk retensi akun, log terstruktur, backup MySQL harian, health check, dan pencatatan kegagalan pemeriksaan Top-up. Redis dan multi-region ditunda sampai beban mengharuskannya.
 - **Demo GitHub Pages:** laman murid memakai data fixture dan state dalam memori browser. Daftar, saldo, pembelian, dan Top-up hanya simulasi; tidak ada akun, persistence, transfer, atau konfirmasi uang yang nyata. Panel admin di domain produk tetap memakai API Laravel.
 
 Laravel 13 mendukung PHP 8.3–8.5; Vue 3 adalah versi mayor terkini yang direkomendasikan untuk proyek baru; MySQL 8.4 berada di jalur LTS dengan perubahan yang lebih terkendali. [Siklus rilis Laravel](https://laravel.com/framework/docs/releases), [FAQ Vue](https://vuejs.org/about/faq), [rilis LTS MySQL](https://dev.mysql.com/doc/refman/8.4/en/mysql-releases.html)

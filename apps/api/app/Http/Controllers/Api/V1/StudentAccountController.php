@@ -10,6 +10,7 @@ use App\Models\AuditLog;
 use App\Models\StudentAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class StudentAccountController extends Controller
@@ -19,6 +20,10 @@ class StudentAccountController extends Controller
         Gate::authorize('viewAny', StudentAccount::class);
 
         $students = StudentAccount::query()
+            ->withCount(['accesses as active_accesses_count' => fn ($query) => $query
+                ->where('status', 'Aktif')
+                ->where(fn ($access) => $access->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->where(fn ($access) => $access->whereNull('student_accesses.attempt_quota')->orWhereColumn('student_accesses.attempts_used', '<', 'student_accesses.attempt_quota'))])
             ->when($request->string('q')->isNotEmpty(), function ($query) use ($request): void {
                 $term = '%'.$request->string('q')->toString().'%';
                 $query->where(fn ($builder) => $builder->where('name', 'like', $term)->orWhere('email', 'like', $term)->orWhere('school', 'like', $term));
@@ -42,6 +47,8 @@ class StudentAccountController extends Controller
             'created_by' => $request->user()->id,
         ]);
 
+        Password::broker('students')->sendResetLink(['email' => $student->email]);
+
         AuditLog::record($request, 'student.created', 'StudentAccount', (string) $student->id, null, $this->auditState($student), $data['reason'] ?? 'Akun murid diprovisi');
 
         return StudentAccountResource::make($student);
@@ -54,6 +61,7 @@ class StudentAccountController extends Controller
         abort_if($student->status === 'Ditutup', 422, 'Akun yang sudah ditutup tidak dapat diubah.');
         $data = $request->validated();
         $before = $this->auditState($student);
+        $emailChanged = isset($data['email']) && $data['email'] !== $student->email;
         $student->fill(array_filter([
             'name' => $data['name'] ?? null,
             'email' => $data['email'] ?? null,
@@ -61,6 +69,9 @@ class StudentAccountController extends Controller
             'external_id' => array_key_exists('externalId', $data) ? ($data['externalId'] ?: 'invite-'.Str::ulid()) : null,
             'status' => $data['status'] ?? null,
         ], fn ($value): bool => $value !== null));
+        if ($emailChanged) {
+            $student->markEmailAsUnverified();
+        }
         $student->save();
 
         AuditLog::record($request, 'student.updated', 'StudentAccount', (string) $student->id, $before, $this->auditState($student), $data['reason'] ?? 'Data atau akses murid diperbarui');
@@ -84,7 +95,7 @@ class StudentAccountController extends Controller
         Gate::authorize('update', $student);
         $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
         $before = $this->auditState($student);
-        $student->forceFill(['status' => 'Ditutup', 'closed_at' => now()])->save();
+        $student->forceFill(['status' => 'Ditutup', 'closed_at' => now(), 'remember_token' => Str::random(60)])->save();
 
         AuditLog::record($request, 'student.closed', 'StudentAccount', (string) $student->id, $before, $this->auditState($student), $data['reason']);
 
@@ -97,10 +108,11 @@ class StudentAccountController extends Controller
         Gate::authorize('update', $student);
         $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
 
+        Password::broker('students')->sendResetLink(['email' => $student->email]);
         AuditLog::record($request, 'student.credential_reset_requested', 'StudentAccount', (string) $student->id, $this->auditState($student), $this->auditState($student), $data['reason']);
 
         return response()->json([
-            'message' => 'Permintaan dicatat. Penyedia identitas eksternal belum terhubung, jadi kredensial belum direset.',
+            'message' => 'Tautan reset kata sandi dikirim ke email murid.',
         ], 202);
     }
 

@@ -28,6 +28,9 @@ class UpdatePaymentMethodRequest extends FormRequest
             'type' => ['sometimes', 'required', 'string', 'max:80'],
             'provider' => ['sometimes', 'required', 'string', 'max:80'],
             'fee' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'accountName' => ['sometimes', 'nullable', 'string', 'max:160'],
+            'accountNumber' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'instructions' => ['sometimes', 'nullable', 'string', 'max:4000'],
             'isActive' => ['sometimes', 'boolean'],
             'reason' => ['nullable', 'string', 'max:500'],
         ];

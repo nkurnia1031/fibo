@@ -33,5 +33,18 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by(Str::transliterate($email.'|'.$request->ip()));
         });
+
+        RateLimiter::for('student-login', function (Request $request): Limit {
+            $email = Str::lower($request->string('email')->toString());
+
+            return Limit::perMinute(5)->by(Str::transliterate($email.'|'.$request->ip()));
+        });
+
+        RateLimiter::for('student-register', fn (Request $request): Limit => Limit::perHour(5)->by($request->ip()));
+        RateLimiter::for('student-password-reset', function (Request $request): Limit {
+            $email = Str::lower($request->string('email')->toString());
+
+            return Limit::perHour(5)->by(Str::transliterate($email.'|'.$request->ip()));
+        });
     }
 }

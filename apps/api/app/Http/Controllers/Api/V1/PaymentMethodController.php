@@ -31,6 +31,9 @@ class PaymentMethodController extends Controller
             'type' => $data['type'],
             'provider' => $data['provider'],
             'fee_info' => $data['fee'] ?? 'Sesuai kontrak',
+            'account_name' => $data['accountName'] ?? null,
+            'account_number' => $data['accountNumber'] ?? null,
+            'instructions' => $data['instructions'] ?? null,
             'is_active' => $data['isActive'] ?? true,
             'created_by' => $request->user()->id,
         ]);
@@ -47,13 +50,18 @@ class PaymentMethodController extends Controller
         Gate::authorize('update', $method);
         $data = $request->validated();
         $before = $this->auditState($method);
-        $method->fill(array_filter([
-            'name' => $data['name'] ?? null,
-            'type' => $data['type'] ?? null,
-            'provider' => $data['provider'] ?? null,
-            'fee_info' => $data['fee'] ?? null,
-            'is_active' => $data['isActive'] ?? null,
-        ], fn ($value): bool => $value !== null));
+        $fields = [
+            'name' => 'name', 'type' => 'type', 'provider' => 'provider', 'fee' => 'fee_info',
+            'accountName' => 'account_name', 'accountNumber' => 'account_number',
+            'instructions' => 'instructions', 'isActive' => 'is_active',
+        ];
+        $attributes = [];
+        foreach ($fields as $requestField => $modelField) {
+            if (array_key_exists($requestField, $data)) {
+                $attributes[$modelField] = $data[$requestField];
+            }
+        }
+        $method->fill($attributes);
         $method->save();
 
         AuditLog::record($request, 'payment_method.updated', 'PaymentMethod', (string) $method->id, $before, $this->auditState($method), $data['reason'] ?? 'Metode pembayaran diperbarui');
@@ -83,6 +91,9 @@ class PaymentMethodController extends Controller
             'type' => $method->type,
             'provider' => $method->provider,
             'fee' => $method->fee_info,
+            'accountName' => $method->account_name,
+            'accountNumber' => $method->account_number,
+            'instructions' => $method->instructions,
             'isActive' => $method->is_active,
             'usage' => $method->usage_count,
         ];

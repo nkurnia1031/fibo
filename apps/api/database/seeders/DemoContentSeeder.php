@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\AccessOffer;
 use App\Models\PackageItem;
 use App\Models\PackageSeries;
 use App\Models\PaymentMethod;
+use App\Models\PointBundle;
 use App\Models\Question;
 use App\Models\QuestionSeries;
 use App\Models\StudentAccount;
@@ -96,16 +98,42 @@ class DemoContentSeeder extends Seeder
         }
 
         foreach ([
-            ['QRIS', 'QRIS'],
-            ['BCA Virtual Account', 'Virtual account'],
-            ['GoPay', 'E-wallet'],
-            ['DANA', 'E-wallet'],
-        ] as [$name, $type]) {
+            ['Transfer Bank BCA', 'Transfer bank', 'BCA'],
+            ['Transfer Bank Mandiri', 'Transfer bank', 'Mandiri'],
+        ] as [$name, $type, $provider]) {
             PaymentMethod::firstOrCreate(['name' => $name], [
                 'code' => 'PM-'.Str::upper(Str::random(12)),
                 'type' => $type,
-                'provider' => 'Midtrans',
-                'fee_info' => 'Sesuai kontrak',
+                'provider' => $provider,
+                'fee_info' => 'Dikelola manual',
+                'is_active' => false,
+                'created_by' => $owner->id,
+            ]);
+        }
+
+        foreach ([
+            ['500 Poin', 50000, 500, 0],
+            ['1.200 Poin', 100000, 1200, 0],
+            ['2.600 Poin', 200000, 2400, 200],
+        ] as [$name, $amount, $points, $bonus]) {
+            PointBundle::firstOrCreate(['name' => $name], [
+                'code' => 'PB-'.Str::upper(Str::random(10)),
+                'transfer_amount' => $amount,
+                'points' => $points,
+                'bonus_points' => $bonus,
+                'is_active' => false,
+                'created_by' => $owner->id,
+            ]);
+        }
+
+        foreach (TestPackage::query()->where('status', 'Terbit')->get() as $package) {
+            AccessOffer::firstOrCreate(['test_package_id' => $package->id], [
+                'code' => 'AO-'.Str::upper(Str::random(10)),
+                'product_type' => 'package',
+                'title' => $package->name,
+                'description' => 'Penawaran contoh. Aktifkan dan tetapkan harga sebelum dijual.',
+                'price_points' => 100,
+                'attempt_quota' => 1,
                 'is_active' => false,
                 'created_by' => $owner->id,
             ]);

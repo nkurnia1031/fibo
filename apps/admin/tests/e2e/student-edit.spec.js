@@ -114,3 +114,19 @@ test('owner can add, preview, and edit LaTeX blocks in a question', async ({ pag
   await page.getByRole('button', { name: 'Simpan draf' }).click()
   await expect(page.getByRole('row', { name: /Soal formula QA/ })).toBeVisible()
 })
+
+test('finance panel shows manual point operations instead of direct payment gateway subscriptions', async ({ page }) => {
+  await signInOwner(page)
+  await page.getByRole('button', { name: 'Poin dan Top-up', exact: true }).click()
+
+  await expect(page.getByRole('heading', { name: 'Poin dan Top-up' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Top-up murid' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Paket Poin' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Penawaran akses' })).toBeVisible()
+  await expect(page.getByText('BONUS PENDAFTARAN')).toBeVisible()
+  await expect(page.getByText('Poin diterbitkan')).toBeVisible()
+  await expect(page.getByText('Poin dibelanjakan')).toBeVisible()
+  await expect(page.getByText('Saldo murid')).toBeVisible()
+  await expect(page.getByText('Gateway demo: Midtrans')).toHaveCount(0)
+  await expect(page.getByText('Langganan aktif', { exact: true })).toHaveCount(0)
+})

@@ -27,6 +27,9 @@ class StorePaymentMethodRequest extends FormRequest
             'type' => ['required', 'string', 'max:80'],
             'provider' => ['required', 'string', 'max:80'],
             'fee' => ['nullable', 'string', 'max:120'],
+            'accountName' => ['nullable', 'string', 'max:160'],
+            'accountNumber' => ['nullable', 'string', 'max:100'],
+            'instructions' => ['nullable', 'string', 'max:4000'],
             'isActive' => ['sometimes', 'boolean'],
             'reason' => ['nullable', 'string', 'max:500'],
         ];

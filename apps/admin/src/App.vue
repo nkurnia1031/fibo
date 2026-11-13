@@ -28,7 +28,7 @@ const allNavItems = [
   { id: 'packages', label: 'Paket tes', icon: Package },
   { id: 'students', label: 'Murid', icon: UsersRound },
   { id: 'staff', label: 'Admin & staf', icon: UserCog },
-  { id: 'finance', label: 'Langganan & pembayaran', icon: CreditCard },
+  { id: 'finance', label: 'Poin dan Top-up', icon: CreditCard },
   { id: 'reports', label: 'Analitik', icon: BarChart3 },
 ]
 const roleSections = {

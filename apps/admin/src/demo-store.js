@@ -7,16 +7,22 @@ export const store = reactive({
   students: [],
   adminUsers: [],
   paymentMethods: [],
-  payments: [
-    { id: 'INV-2611-084', student: 'Alya Putri', plan: 'Paket 30 hari · 15 percobaan', channel: 'QRIS', amount: 'Rp 149.000', status: 'Menunggu', date: '10 Nov, 09.42' },
-    { id: 'INV-2611-083', student: 'Raka Pratama', plan: 'Paket 90 hari · 40 percobaan', channel: 'BCA Virtual Account', amount: 'Rp 349.000', status: 'Terbayar', date: '10 Nov, 08.16' },
-    { id: 'INV-2611-082', student: 'Naya Safitri', plan: 'Paket 30 hari · 15 percobaan', channel: 'GoPay', amount: 'Rp 149.000', status: 'Terbayar', date: '9 Nov, 19.35' },
-  ],
-  plans: [
-    { name: 'Paket 30 hari', validity: '30 hari', quota: '15 percobaan', price: 'Rp 149.000', students: 284, state: 'Aktif' },
-    { name: 'Paket 90 hari', validity: '90 hari', quota: '40 percobaan', price: 'Rp 349.000', students: 162, state: 'Aktif' },
-    { name: 'Paket 180 hari', validity: '180 hari', quota: '90 percobaan', price: 'Rp 599.000', students: 71, state: 'Aktif' },
-  ],
+  topUps: [],
+  pointBundles: [],
+  accessOffers: [],
+  availablePackages: [],
+  topUpPagination: { currentPage: 1, lastPage: 1 },
+  walletSettings: { signupBonusPoints: 100 },
+  walletSummary: {
+    confirmedTransferAmount: 0,
+    pendingTopUps: 0,
+    totalTopUps: 0,
+    topUpPoints: 0,
+    promotionalPoints: 0,
+    spentPoints: 0,
+    correctedPoints: 0,
+    outstandingPoints: 0,
+  },
 })
 
 const bodyData = (response) => response?.data?.data ?? response?.data
@@ -35,12 +41,30 @@ export async function loadContent(user) {
     setCollection('questions', [])
     setCollection('packages', [])
   }
-  if (['Owner', 'Admin', 'Support'].includes(role)) requests.push(apiRequest('/students?per_page=100').then((response) => setCollection('students', collectionData(response))))
+  if (['Owner', 'Admin', 'Support', 'Finance'].includes(role)) requests.push(apiRequest('/students?per_page=100').then((response) => setCollection('students', collectionData(response))))
   else setCollection('students', [])
   if (role === 'Owner') requests.push(apiRequest('/staff?per_page=100').then((response) => setCollection('adminUsers', collectionData(response))))
   else setCollection('adminUsers', [])
   if (['Owner', 'Admin', 'Finance'].includes(role)) requests.push(apiRequest('/payment-methods?per_page=100').then((response) => setCollection('paymentMethods', collectionData(response))))
   else setCollection('paymentMethods', [])
+  if (['Owner', 'Admin', 'Finance'].includes(role)) {
+    requests.push(apiRequest('/top-ups?per_page=100').then((response) => {
+      setCollection('topUps', collectionData(response))
+      store.topUpPagination = { currentPage: response.data?.current_page || 1, lastPage: response.data?.last_page || 1 }
+    }))
+    requests.push(apiRequest('/point-bundles?per_page=100').then((response) => setCollection('pointBundles', collectionData(response))))
+    requests.push(apiRequest('/access-offers?per_page=100').then((response) => setCollection('accessOffers', collectionData(response))))
+    requests.push(apiRequest('/package-options').then((response) => setCollection('availablePackages', collectionData(response))))
+    requests.push(apiRequest('/wallet-settings').then((response) => { store.walletSettings.signupBonusPoints = response.signupBonusPoints }))
+    requests.push(apiRequest('/wallet-summary').then((response) => { store.walletSummary = response }))
+  } else {
+    setCollection('topUps', [])
+    store.topUpPagination = { currentPage: 1, lastPage: 1 }
+    setCollection('pointBundles', [])
+    setCollection('accessOffers', [])
+    setCollection('availablePackages', [])
+    store.walletSummary = { confirmedTransferAmount: 0, pendingTopUps: 0, totalTopUps: 0, topUpPoints: 0, promotionalPoints: 0, spentPoints: 0, correctedPoints: 0, outstandingPoints: 0 }
+  }
   await Promise.all(requests)
 }
 
@@ -217,7 +241,79 @@ export async function deleteUnusedPaymentMethod(method) {
   if (index >= 0) store.paymentMethods.splice(index, 1)
 }
 
-export async function confirmPayment(payment) {
-  payment.status = 'Terbayar'
-  payment.date = 'Baru saja'
+async function reloadWalletAdmin() {
+  const [topUps, pointBundles, accessOffers, paymentMethods, settings, summary] = await Promise.all([
+    apiRequest('/top-ups?per_page=100'),
+    apiRequest('/point-bundles?per_page=100'),
+    apiRequest('/access-offers?per_page=100'),
+    apiRequest('/payment-methods?per_page=100'),
+    apiRequest('/wallet-settings'),
+    apiRequest('/wallet-summary'),
+  ])
+  setCollection('topUps', collectionData(topUps))
+  store.topUpPagination = { currentPage: topUps.data?.current_page || 1, lastPage: topUps.data?.last_page || 1 }
+  setCollection('pointBundles', collectionData(pointBundles))
+  setCollection('accessOffers', collectionData(accessOffers))
+  setCollection('paymentMethods', collectionData(paymentMethods))
+  store.walletSettings.signupBonusPoints = settings.signupBonusPoints
+  store.walletSummary = summary
+}
+
+export async function loadMoreTopUps() {
+  const nextPage = store.topUpPagination.currentPage + 1
+  if (nextPage > store.topUpPagination.lastPage) return
+  const response = await apiRequest(`/top-ups?per_page=100&page=${nextPage}`)
+  store.topUps.push(...collectionData(response))
+  store.topUpPagination = { currentPage: response.data?.current_page || nextPage, lastPage: response.data?.last_page || nextPage }
+}
+
+export async function reviewTopUp(topUp, decision, reason) {
+  await apiRequest(`/top-ups/${topUp.id}/review`, { method: 'POST', body: { decision, reason } })
+  await reloadWalletAdmin()
+}
+
+export function topUpProofUrl(topUp) {
+  return `/api/v1/top-ups/${topUp.id}/proof`
+}
+
+export async function createPointBundle(bundle) {
+  await apiRequest('/point-bundles', { method: 'POST', body: bundle })
+  await reloadWalletAdmin()
+}
+
+export async function savePointBundle(bundle, changes) {
+  await apiRequest(`/point-bundles/${encode(bundle.id)}`, { method: 'PUT', body: changes })
+  await reloadWalletAdmin()
+}
+
+export async function deletePointBundle(bundle) {
+  await apiRequest(`/point-bundles/${encode(bundle.id)}`, { method: 'DELETE', body: { reason: 'Paket Poin yang belum dipakai dihapus' } })
+  await reloadWalletAdmin()
+}
+
+export async function createAccessOffer(offer) {
+  await apiRequest('/access-offers', { method: 'POST', body: offer })
+  await reloadWalletAdmin()
+}
+
+export async function saveAccessOffer(offer, changes) {
+  await apiRequest(`/access-offers/${encode(offer.id)}`, { method: 'PUT', body: changes })
+  await reloadWalletAdmin()
+}
+
+export async function deleteAccessOffer(offer) {
+  await apiRequest(`/access-offers/${encode(offer.id)}`, { method: 'DELETE', body: { reason: 'Penawaran akses yang belum dipakai dihapus' } })
+  await reloadWalletAdmin()
+}
+
+export async function saveWalletSettings(settings) {
+  const result = await apiRequest('/wallet-settings', { method: 'PUT', body: settings })
+  store.walletSettings.signupBonusPoints = result.signupBonusPoints
+}
+
+export async function adjustStudentPoints(student, changes) {
+  const response = await apiRequest(`/students/${encode(student.id)}/points`, { method: 'POST', body: changes })
+  student.pointBalance = response.balance
+  await reloadWalletAdmin()
+  return response
 }
